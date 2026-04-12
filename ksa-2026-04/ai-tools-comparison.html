@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 도구 비교 — KSA 데이터 인사이트 분석 실무</title>
+<style>
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+  --font-mono: 'SF Mono', Menlo, 'Noto Sans Mono', monospace;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #555;
+  --color-text-tertiary: #888;
+  --color-text-info: #185FA5;
+  --color-text-danger: #A32D2D;
+  --color-text-success: #3B6D11;
+  --color-text-warning: #854F0B;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f6f5f3;
+  --color-background-tertiary: #eeecea;
+  --color-background-info: #E6F1FB;
+  --color-background-danger: #FCEBEB;
+  --color-background-success: #EAF3DE;
+  --color-background-warning: #FAEEDA;
+  --color-border-tertiary: rgba(0,0,0,0.12);
+  --color-border-secondary: rgba(0,0,0,0.20);
+  --color-border-primary: rgba(0,0,0,0.30);
+  --color-border-info: #378ADD;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-text-primary: #e8e6e1;
+    --color-text-secondary: #a8a6a0;
+    --color-text-tertiary: #777;
+    --color-text-info: #85B7EB;
+    --color-text-danger: #F09595;
+    --color-text-success: #C0DD97;
+    --color-text-warning: #FAC775;
+    --color-background-primary: #1e1e1c;
+    --color-background-secondary: #2a2a27;
+    --color-background-tertiary: #333330;
+    --color-background-info: #0C447C;
+    --color-background-danger: #501313;
+    --color-background-success: #173404;
+    --color-background-warning: #412402;
+    --color-border-tertiary: rgba(255,255,255,0.12);
+    --color-border-secondary: rgba(255,255,255,0.20);
+    --color-border-primary: rgba(255,255,255,0.30);
+    --color-border-info: #85B7EB;
+  }
+  .badge-free { background: #27500A !important; color: #C0DD97 !important; }
+  .badge-paid { background: #0C447C !important; color: #B5D4F4 !important; }
+  .badge-rec { background: #633806 !important; color: #FAC775 !important; }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+  background: var(--color-background-tertiary);
+  line-height: 1.6;
+}
+.container {
+  max-width: 720px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+.page-title {
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.page-sub {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-bottom: 1.5rem;
+}
+.tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.tab {
+  padding: 8px 16px;
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  background: transparent;
+  color: var(--color-text-secondary);
+  transition: all 0.15s;
+  font-family: var(--font-sans);
+}
+.tab.active {
+  background: var(--color-background-info);
+  color: var(--color-text-info);
+  border-color: var(--color-border-info);
+}
+.tab:hover:not(.active) {
+  background: var(--color-background-secondary);
+}
+.panel { display: none; }
+.panel.active { display: block; }
+
+.card {
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-lg);
+  padding: 1rem 1.25rem;
+  margin-bottom: 12px;
+}
+.card.featured {
+  border: 2px solid var(--color-border-info);
+}
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.card-title {
+  font-size: 16px;
+  font-weight: 500;
+}
+.badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: var(--border-radius-md);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.badge-free { background: #EAF3DE; color: #3B6D11; }
+.badge-paid { background: #E6F1FB; color: #185FA5; }
+.badge-rec { background: #FAEEDA; color: #854F0B; }
+.price-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+.price-tag {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--color-background-secondary);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+.desc {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  margin-top: 8px;
+}
+.pro { color: #1D9E75; font-weight: 500; }
+.con { color: #E24B4A; font-weight: 500; }
+
+.ctx-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+.ctx-card {
+  background: var(--color-background-secondary);
+  border-radius: var(--border-radius-md);
+  padding: 12px 16px;
+}
+.ctx-label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+.ctx-value {
+  font-size: 14px;
+  font-weight: 500;
+}
+.ctx-detail {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+  line-height: 1.6;
+}
+
+.matrix-wrap { overflow-x: auto; }
+.matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.matrix th {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.matrix td {
+  padding: 8px 10px;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+  vertical-align: top;
+}
+.matrix tr:last-child td { border-bottom: none; }
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+.dot-g { background: #1D9E75; }
+.dot-y { background: #EF9F27; }
+.dot-r { background: #E24B4A; }
+
+.summary-box {
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-lg);
+  padding: 1.25rem;
+  margin-top: 1.5rem;
+}
+.summary-title {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.summary-item {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  margin-bottom: 8px;
+  padding-left: 1rem;
+  text-indent: -1rem;
+}
+.summary-item strong {
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+.footer {
+  text-align: center;
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  margin-top: 2rem;
+  padding-bottom: 2rem;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="page-title">[AI+] 기획·보고서에 바로 쓰는 데이터 인사이트 분석 실무</div>
+  <div class="page-sub">AI 협업 도구 비교 가이드 — 2026년 4월 기준</div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showPanel('overview', this)">가격 비교</div>
+    <div class="tab" onclick="showPanel('context', this)">맥락별 추천</div>
+    <div class="tab" onclick="showPanel('matrix', this)">기능 매트릭스</div>
+    <div class="tab" onclick="showPanel('alt', this)">대안 도구</div>
+    <div class="tab" onclick="showPanel('combo', this)">실전 조합</div>
+  </div>
+
+  <!-- ========== 가격 비교 ========== -->
+  <div id="overview" class="panel active">
+
+    <div class="card featured">
+      <div class="card-header">
+        <span class="card-title">ChatGPT (OpenAI)</span>
+        <span class="badge badge-rec">과정 기본 도구</span>
+      </div>
+      <div class="price-row">
+        <span class="price-tag">무료: GPT-5.3 · 광고포함</span>
+        <span class="price-tag">Go ₩11,000/월 · 광고</span>
+        <span class="price-tag">Plus ₩29,000/월</span>
+        <span class="price-tag">Pro(5x) ₩159,000/월</span>
+        <span class="price-tag">Pro(20x) ₩299,000/월</span>
+      </div>
+      <div class="desc">
+        <span class="pro">강점:</span> 파일 업로드 후 Python 코드 실행(Advanced Data Analysis)으로 기술통계·교차분석·시각화 원스톱 처리. Deep Research(Plus 10회/월). 가장 넓은 사용자 기반 → 수강생 친숙도 최고. 긴 대화 맥락 유지 우수.<br>
+        <span class="con">약점:</span> 무료/Go 티어 2026.2~ 광고 포함. 수치 환각 가능성 → 반드시 Excel 교차검증. 분석 결과를 Excel로 직접 반영 불가(별도 다운로드 후 수동 이동).
+      </div>
+    </div>
+
+    <div class="card featured">
+      <div class="card-header">
+        <span class="card-title">Claude (Anthropic)</span>
+        <span class="badge badge-rec">해석·보고서 특화</span>
+      </div>
+      <div class="price-row">
+        <span class="price-tag">무료: Sonnet · 20~30msg/일</span>
+        <span class="price-tag">Pro ₩29,000/월 · 5배 용량</span>
+        <span class="price-tag">Max(5x) ₩145,000/월</span>
+        <span class="price-tag">Max(20x) ₩290,000/월</span>
+        <span class="price-tag">Team $25~30/석</span>
+      </div>
+      <div class="desc">
+        <span class="pro">강점:</span> 긴 문서 분석 최강(최대 100만 토큰). 인사이트 언어화·보고서 초안 품질 최우수 — "해석→판단 연결" 서술 특화. Artifacts로 코드·문서 실시간 생성. Projects로 과정 자료 묶어 관리. 광고 없음. 유료 시 학습 데이터 미사용.<br>
+        <span class="con">약점:</span> 데이터 분석 UI 직관성은 ChatGPT 대비 약간 낮음. 이미지 생성 불가. 무료 일일 메시지 한도 소진 빠름.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Claude in Excel</span>
+        <span class="badge badge-paid">Pro ₩29,000/월에 포함</span>
+      </div>
+      <div class="price-row">
+        <span class="price-tag">무료: 없음</span>
+        <span class="price-tag">Pro 구독에 포함 · 추가 비용 없음</span>
+      </div>
+      <div class="desc">
+        <span class="pro">강점:</span> Excel 사이드바에서 워크북 직접 분석 — 수식 추적, 피벗테이블 편집, 차트 수정, 조건부 서식. 셀 레벨 인용으로 검증 투명성. 가정 변경 시 수식 의존성 보존 + 영향도 분석. Excel↔PowerPoint 대화 컨텍스트 공유. Sonnet/Opus 모델 선택 가능.<br>
+        <span class="con">약점:</span> VBA·Power Query·데이터 테이블 미지원. .xlsx/.xlsm만 지원. 인터넷 필수. Claude 전체 사용량에서 차감(별도 할당 아님).
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Google Gemini</span>
+        <span class="badge badge-free">무료 티어 최고</span>
+      </div>
+      <div class="price-row">
+        <span class="price-tag">무료: Flash 모델 · 관대한 한도</span>
+        <span class="price-tag">Pro ₩29,000/월 · 2TB 포함</span>
+        <span class="price-tag">Ultra ~₩180,000/3개월</span>
+      </div>
+      <div class="desc">
+        <span class="pro">강점:</span> 무료 티어 업계 최고(이미지 생성·코드 실행·웹 검색 포함). Google Workspace 네이티브 통합(Sheets·Docs·Slides). Deep Research 우수. 구글 생태계 사용자에게 진입장벽 최저.<br>
+        <span class="con">약점:</span> Excel/Power BI 워크플로우와 직접 통합 안 됨 — 본 과정 도구 체인과 거리. 세밀한 수치 정확도에서 약간 열세. Sheets 전용이라 .xlsx 직접 처리 제한적.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Microsoft Copilot (365)</span>
+        <span class="badge badge-paid">M365 + 추가 과금</span>
+      </div>
+      <div class="price-row">
+        <span class="price-tag">Chat: M365 구독자 무료</span>
+        <span class="price-tag">Pro $20/월 (개인)</span>
+        <span class="price-tag">Business $18~30/석/월 + M365</span>
+        <span class="price-tag">실질 $27~60/월</span>
+      </div>
+      <div class="desc">
+        <span class="pro">강점:</span> Excel·Word·PPT·Teams 완전 네이티브 통합 — 수식 생성, VBA 지원, 슬라이드 작성까지 앱 내 완결. 기업 보안·컴플라이언스 최강. 조직 데이터(SharePoint, Teams) 연결.<br>
+        <span class="con">약점:</span> M365 구독 전제 → 실질 비용 높음. 분석 추론 깊이 ChatGPT·Claude 대비 열세. 개인 수강생 대상 라이선스 확보 어려움. 한국어 자연어 분석 품질 불안정.
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 맥락별 추천 ========== -->
+  <div id="context" class="panel">
+    <div class="ctx-grid">
+      <div class="ctx-card">
+        <div class="ctx-label">1. 분석 방법 선택 (AI에게 묻기)</div>
+        <div class="ctx-value">ChatGPT Plus ≥ Claude Pro</div>
+        <div class="ctx-detail">"매출 하락 원인 파악에 어떤 분석이 적절할까?" — 두 도구 모두 우수. ChatGPT는 즉시 코드 실행까지 연결, Claude는 판단 기준 구조화에 강점.</div>
+      </div>
+      <div class="ctx-card">
+        <div class="ctx-label">2. 데이터 전처리 (Power Query 대안)</div>
+        <div class="ctx-value">ChatGPT Plus > Claude in Excel</div>
+        <div class="ctx-detail">ChatGPT: 파일 업로드 → Python으로 결측치 처리·피벗 변환 즉시 실행. Claude in Excel: Power Query 미지원이나 간단한 정리·필터는 가능.</div>
+      </div>
+      <div class="ctx-card">
+        <div class="ctx-label">3. 기술통계·교차분석 실행</div>
+        <div class="ctx-value">Claude in Excel ≈ ChatGPT Plus</div>
+        <div class="ctx-detail">Claude in Excel: 워크북 안에서 직접 피벗·기술통계 → 셀 인용으로 검증 용이. ChatGPT: Python으로 더 복잡한 통계 가능하나 Excel 이동 과정 필요.</div>
+      </div>
+      <div class="ctx-card">
+        <div class="ctx-label">4. 시각화·대시보드</div>
+        <div class="ctx-value">Power BI > ChatGPT > Claude in Excel</div>
+        <div class="ctx-detail">Power BI는 대체 불가. AI 보조로는 ChatGPT가 matplotlib/plotly 다양한 차트 생성. Claude in Excel은 기본 차트 편집 가능하나 복잡한 대시보드는 한계.</div>
+      </div>
+      <div class="ctx-card">
+        <div class="ctx-label">5. 인사이트 언어화·보고서 초안</div>
+        <div class="ctx-value">Claude Pro > ChatGPT Plus</div>
+        <div class="ctx-detail">"그래서 뭘 해야 하는가"를 기획서 문장으로 전환하는 품질에서 Claude 우세. 긴 맥락 유지, 과대해석 방지 표현, 판단 근거 구조화에 강점.</div>
+      </div>
+      <div class="ctx-card">
+        <div class="ctx-label">6. 텍스트 분석 (VOC·설문)</div>
+        <div class="ctx-value">ChatGPT Plus ≥ Claude Pro</div>
+        <div class="ctx-detail">ChatGPT: 라벨링·감성분석·주제 분류를 코드 실행으로 자동화. Claude: 분류 품질 우수하나 대량 처리 시 메시지 한도 소진. 교안에서도 ChatGPT 라벨링 + Excel 집계를 Plan B로 명시.</div>
+      </div>
+      <div class="ctx-card">
+        <div class="ctx-label">7. 레드팀 검증·조언 얻기</div>
+        <div class="ctx-value">Claude Pro ≈ ChatGPT Plus</div>
+        <div class="ctx-detail">두 도구 모두 가능. Claude는 비판적 분석·반대 입장 구성에서 미묘하게 우세. "이 결론에 반대하는 입장에서 공격해줘" 프롬프트에 더 날카로운 응답.</div>
+      </div>
+      <div class="ctx-card">
+        <div class="ctx-label">8. 캡스톤 (기획메모 + AI 로그)</div>
+        <div class="ctx-value">ChatGPT + Claude 병행 추천</div>
+        <div class="ctx-detail">분석 실행은 ChatGPT(코드 실행력), 해석·보고서는 Claude(서술 품질). 두 도구 대화 로그를 모두 제출 → AI 협업 역량 평가에서 차별화.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 기능 매트릭스 ========== -->
+  <div id="matrix" class="panel">
+    <div class="matrix-wrap">
+    <table class="matrix">
+      <thead>
+        <tr>
+          <th style="min-width:110px;">기능</th>
+          <th>ChatGPT Plus</th>
+          <th>Claude Pro</th>
+          <th>Claude in Excel</th>
+          <th>Gemini Pro</th>
+          <th>Copilot Pro</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:500;">월 비용 (원화)</td>
+          <td>₩29,000</td>
+          <td>₩29,000</td>
+          <td>Pro에 포함</td>
+          <td>₩29,000</td>
+          <td>$20 + M365</td>
+        </tr>
+        <tr>
+          <td style="font-weight:500;">무료 사용</td>
+          <td><span class="dot dot-y"></span>제한+광고</td>
+          <td><span class="dot dot-y"></span>20~30msg/일</td>
+          <td><span class="dot dot-r"></span>불가</td>
+          <td><span class="dot dot-g"></span>관대</td>
+          <td><span class="dot dot-y"></span>Chat만</td>
+        </tr>
+        <tr>
+          <td style="font-weight:500;">파일 업로드 분석</td>
+          <td><span class="dot dot-g"></span>우수</td>
+          <td><span class="dot dot-g"></span>우수</td>
+          <td><span class="dot dot-g"></span>Excel 전용</td>
+          <td><span class="dot dot-y"></span>보통</td>
+          <td><span class="dot dot-g"></span>우수</td>
+        </tr>
+        <tr>
+          <td style="font-weight:500;">코드 실행</td>
+          <td><span class="dot dot-g"></span>Python</td>
+          <td><span class="dot dot-g"></span>Python</td>
+          <td><span class="dot dot-r"></span>불가</td>
+          <td><span class="dot dot-g"></span>Python</td>
+          <td><span class="dot dot-y"></span>제한적</td>
+        </tr>
+        <tr>
+          <td style="font-weight:500;">Excel 직접 조작</td>
+          <td><span class="dot dot-r"></span>불가</td>
+          <td><span class="dot dot-r"></span>불가</td>
+          <td><span class="dot dot-g"></span>핵심 기능</td>
+          <td><span class="dot dot-r"></span>불가</td>
+          <td><span class="dot dot-g"></span>네이티브</td>
+        </tr>
+        <tr>
+          <td style="font-weight:500;">피벗테이블</td>
+          <td><span class="dot dot-y"></span>코드 생성</td>
+          <td><span class="dot dot-y"></span>코드 생성</td>
+          <td><span class="dot dot-g"></span>직접 편집</td>
+          <td><span class="dot dot-r"></span>Sheets만</td>
+          <td><span class="dot dot-g"></span>직접 생성</td>
+        </tr>
+        <tr>
+          <td style="font-weight:500;">보고서 서술 품질</td>
+          <td><span class="dot dot-g"></span>우수</td>
+          <td><span class="dot dot-g"></span>최우수</td>
+          <td><span class="dot dot-y"></span>보통</td>
+          <td><span class="dot dot-y"></span>보통</td>
+          <td><span class="dot dot-y"></span>보통</td>
+        </tr>
+        <tr>
+          <td style="font-weight:500;">한국어 품질</td>
+          <td><span class="dot dot-g"></span>우수</td>
+          <td><span class="dot dot-g"></span>우수</td>
+          <td><span class="dot dot-g"></span>우수</td>
+          <td><span class="dot dot-y"></span>양호</td>
+          <td><span class="dot dot-y"></span>양호</td>
+        </tr>
+        <tr>
+          <td style="font-weight:500;">컨텍스트 길이</td>
+          <td>~320페이지</td>
+          <td>~100만 토큰</td>
+          <td>워크북 전체</td>
+          <td>100만 토큰</td>
+          <td>제한적</td>
+        </tr>
+        <tr>
+          <td style="font-weight:500;">광고</td>
+          <td><span class="dot dot-r"></span>무료/Go 있음</td>
+          <td><span class="dot dot-g"></span>없음</td>
+          <td><span class="dot dot-g"></span>없음</td>
+          <td><span class="dot dot-g"></span>없음</td>
+          <td><span class="dot dot-g"></span>없음</td>
+        </tr>
+        <tr>
+          <td style="font-weight:500;">데이터 학습 사용</td>
+          <td>옵트아웃 가능</td>
+          <td>유료 시 미사용</td>
+          <td>30일 후 삭제</td>
+          <td>옵트아웃 가능</td>
+          <td>비즈니스 미사용</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <div style="margin-top:12px; font-size:12px; color:var(--color-text-tertiary);">
+      <span class="dot dot-g"></span>우수/가능 &nbsp;
+      <span class="dot dot-y"></span>보통/제한적 &nbsp;
+      <span class="dot dot-r"></span>불가/없음
+    </div>
+  </div>
+
+  <!-- ========== 대안 도구 ========== -->
+  <div id="alt" class="panel">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Perplexity AI</span>
+        <span class="badge badge-free">무료 가능</span>
+      </div>
+      <div class="price-row">
+        <span class="price-tag">무료: 기본 검색</span>
+        <span class="price-tag">Pro $20/월</span>
+      </div>
+      <div class="desc">
+        <span class="pro">강점:</span> 실시간 웹 검색 + 출처 인용 자동화. 벤치마크·시장 자료 조사에 최적. "경쟁사 구매단가 트렌드" 같은 외부 데이터 리서치에 즉시 활용.<br>
+        <span class="con">약점:</span> 데이터 파일 분석·Excel 조작 불가. 기획 보고서 초안 작성 품질은 ChatGPT·Claude 대비 약함.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">NotebookLM (Google)</span>
+        <span class="badge badge-free">완전 무료</span>
+      </div>
+      <div class="price-row">
+        <span class="price-tag">무료 (Google 계정만)</span>
+        <span class="price-tag">Plus $7.99/월 (확장)</span>
+      </div>
+      <div class="desc">
+        <span class="pro">강점:</span> 여러 문서 업로드 → 교차 질의 + 출처 자동 인용. 과정 교안·실습 자료를 한 번에 올리고 탐색하는 용도로 유용. 팟캐스트 형식 요약 생성 가능.<br>
+        <span class="con">약점:</span> 코드 실행·Excel 조작 불가. 실시간 데이터 분석 도구가 아님 — 문서 기반 리서치 보조에 한정.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Julius AI</span>
+        <span class="badge badge-free">무료 가능</span>
+      </div>
+      <div class="price-row">
+        <span class="price-tag">무료: 제한적 분석</span>
+        <span class="price-tag">Pro ~$20/월</span>
+      </div>
+      <div class="desc">
+        <span class="pro">강점:</span> 데이터 분석 전용 AI — CSV/Excel 업로드 → 자동 시각화·통계 분석·회귀분석. 분석 초보자에게 가장 낮은 진입장벽. 차트 품질 우수.<br>
+        <span class="con">약점:</span> 범용 대화·보고서 작성 불가. 분석 범위가 정형 데이터에 한정. 텍스트 분석(VOC) 미지원.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Gamma / Beautiful.ai</span>
+        <span class="badge badge-paid">유료 중심</span>
+      </div>
+      <div class="price-row">
+        <span class="price-tag">Gamma 무료 체험 가능</span>
+        <span class="price-tag">Pro ~$10~20/월</span>
+      </div>
+      <div class="desc">
+        <span class="pro">강점:</span> 분석 결과를 즉시 프레젠테이션으로 변환. 인사이트 1장 + 대시보드를 보고서로 빠르게 구성. 시각적 완성도 높음.<br>
+        <span class="con">약점:</span> 데이터 분석 자체 불가 — 시각화/보고 단계에만 유용. PPT/Power BI 워크플로우와 중복 가능.
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 실전 조합 ========== -->
+  <div id="combo" class="panel">
+    <div class="card featured">
+      <div class="card-header">
+        <span class="card-title">추천 조합 A: 유료 예산 있음</span>
+        <span class="badge badge-rec">월 ₩58,000</span>
+      </div>
+      <div class="desc">
+        <strong style="color:var(--color-text-primary);">ChatGPT Plus(₩29,000) + Claude Pro(₩29,000)</strong><br><br>
+        분석 실행·전처리·시각화 → ChatGPT (Python 코드 실행)<br>
+        인사이트 언어화·보고서 초안·레드팀 검증 → Claude<br>
+        Excel 내 직접 분석·피벗 편집 → Claude in Excel (Pro에 포함)<br><br>
+        <span style="font-size:12px; color:var(--color-text-tertiary);">캡스톤에서 두 도구 대화 로그를 모두 제출하면 AI 협업 역량 평가에서 차별화</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">추천 조합 B: 유료 하나만</span>
+        <span class="badge badge-paid">월 ₩29,000</span>
+      </div>
+      <div class="desc">
+        <strong style="color:var(--color-text-primary);">ChatGPT Plus(₩29,000) + Claude 무료 + Gemini 무료</strong><br><br>
+        핵심 분석 → ChatGPT Plus (메인)<br>
+        보고서 초안 검토·레드팀 → Claude 무료 (일일 한도 내)<br>
+        추가 리서치·빠른 확인 → Gemini 무료
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">추천 조합 C: 완전 무료</span>
+        <span class="badge badge-free">₩0</span>
+      </div>
+      <div class="desc">
+        <strong style="color:var(--color-text-primary);">ChatGPT 무료 + Gemini 무료 + Claude 무료</strong><br><br>
+        ChatGPT 무료의 메시지 한도 소진 → Gemini로 전환<br>
+        보고서 서술 → Claude 무료 (20~30msg 범위 내)<br><br>
+        <span class="con">주의:</span> <span style="font-size:12px;">무료 한도만으로 2일 과정 캡스톤까지 완주하기 빠듯할 수 있음. ChatGPT 무료는 "5시간당 10메시지" 수준 → 실습 중 병목 발생 가능</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 하단 요약 ========== -->
+  <div class="summary-box">
+    <div class="summary-title">핵심 원칙: AI는 가속화, 판단은 사람</div>
+    <div class="summary-item"><strong>분석 기법</strong>을 AI가 대신해도, <strong>질문 설계·결과 검증·서술 설득</strong>은 기획자의 영역입니다.</div>
+    <div class="summary-item"><strong>AI 첫 응답 ≠ 최종 결론.</strong> AI가 써준 보고서는 보고서가 아닙니다. 여러분이 분석하고, AI가 도와주고, 여러분이 판단한 보고서가 보고서입니다.</div>
+    <div class="summary-item"><strong>도구를 배우는 이유:</strong> '스스로 하기 위해'에서 'AI를 제대로 쓰기 위해'로. 원리를 알아야 AI의 오류를 잡을 수 있습니다.</div>
+  </div>
+
+  <div class="footer">
+    [AI+] 기획·보고서에 바로 쓰는 데이터 인사이트 분석 실무 — KSA 한국표준협회<br>
+    백승훈 · data_analytics@naver.com · 2026년 4월 기준 가격 정보
+  </div>
+
+</div>
+
+<script>
+function showPanel(id, el) {
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>
