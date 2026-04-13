@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KSA AI 프롬프트 가이드</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2435;
+    --border: #2a3147;
+    --accent-blue: #4a9eff;
+    --accent-red: #ff5a5f;
+    --accent-green: #3ecf8e;
+    --accent-amber: #f5a623;
+    --text: #e2e8f0;
+    --text-dim: #8892a4;
+    --text-muted: #4a5568;
+    --badge-1: #1a3a5c;
+    --badge-1-text: #4a9eff;
+    --badge-2: #3a1a1a;
+    --badge-2-text: #ff5a5f;
+    --badge-3: #1a3a2a;
+    --badge-3-text: #3ecf8e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #0f1117 0%, #151b2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px 20px;
+  }
+  .header-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .header-tag {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    color: var(--accent-blue);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .header-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  /* PRINCIPLE BAR */
+  .principle {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 40px;
+  }
+  .principle-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .principle-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .principle-steps {
+    display: flex;
+    gap: 0;
+    align-items: center;
+  }
+  .pstep {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .pstep-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+  .pstep.s1 .pstep-num { background: var(--badge-1); color: var(--badge-1-text); }
+  .pstep.s2 .pstep-num { background: var(--badge-2); color: var(--badge-2-text); }
+  .pstep.s3 .pstep-num { background: var(--badge-3); color: var(--badge-3-text); }
+  .pstep.s1 { color: var(--badge-1-text); }
+  .pstep.s2 { color: var(--badge-2-text); }
+  .pstep.s3 { color: var(--badge-3-text); }
+  .parrow {
+    color: var(--text-muted);
+    padding: 0 10px;
+    font-size: 14px;
+  }
+
+  /* TABS */
+  .tabs-wrap {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+  }
+  .tabs {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 12px 16px;
+    border: none;
+    background: none;
+    color: var(--text-dim);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--accent-blue);
+    border-bottom-color: var(--accent-blue);
+  }
+  .tab .tag-num {
+    display: inline-block;
+    background: var(--surface2);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 10px;
+    margin-right: 5px;
+    color: var(--text-dim);
+  }
+  .tab.active .tag-num { background: var(--badge-1); color: var(--badge-1-text); }
+
+  /* MAIN CONTENT */
+  .main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 40px;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* PRACTICE HEADER */
+  .practice-header {
+    margin-bottom: 24px;
+  }
+  .practice-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .practice-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .practice-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    padding: 8px 12px;
+    background: var(--surface);
+    border-left: 3px solid var(--border);
+    border-radius: 0 6px 6px 0;
+  }
+  .practice-desc strong { color: var(--accent-amber); font-weight: 500; }
+
+  /* PROMPT STAGES */
+  .stages {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .stage-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .stage-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .stage-badge {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .stage-card.step1 .stage-badge { background: var(--badge-1); color: var(--badge-1-text); }
+  .stage-card.step2 .stage-badge { background: var(--badge-2); color: var(--badge-2-text); }
+  .stage-card.step3 .stage-badge { background: var(--badge-3); color: var(--badge-3-text); }
+
+  .stage-title-wrap {}
+  .stage-type {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .stage-card.step1 .stage-type { color: var(--accent-blue); }
+  .stage-card.step2 .stage-type { color: var(--accent-red); }
+  .stage-card.step3 .stage-type { color: var(--accent-green); }
+
+  .stage-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .stage-body { padding: 16px 20px; }
+
+  .stage-context {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    padding: 8px 10px;
+    background: var(--surface2);
+    border-radius: 6px;
+    border-left: 2px solid var(--border);
+  }
+
+  /* PROMPT BLOCK */
+  .prompt-block {
+    background: #0d1118;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .prompt-block:last-child { margin-bottom: 0; }
+
+  .prompt-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+
+  .copy-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover {
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+  }
+  .copy-btn.copied { border-color: var(--accent-green); color: var(--accent-green); }
+
+  .prompt-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: #c8d3e8;
+    padding: 14px 16px;
+    white-space: pre-wrap;
+    word-break: keep-all;
+  }
+  .prompt-text .hl { color: var(--accent-amber); }
+  .prompt-text .hl-blue { color: var(--accent-blue); }
+  .prompt-text .hl-green { color: var(--accent-green); }
+  .prompt-text .placeholder { color: var(--text-muted); font-style: italic; }
+
+  /* CHOOSE CARDS */
+  .choose-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .choose-option {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .choose-situation {
+    font-size: 11px;
+    color: var(--accent-green);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .choose-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* VERIFICATION */
+  .verify-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .verify-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .verify-label {
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+  .verify-box.a .verify-label { color: var(--accent-blue); }
+  .verify-box.b .verify-label { color: var(--accent-amber); }
+  .verify-item {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    padding: 3px 0;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.5;
+  }
+  .verify-item:last-child { border-bottom: none; }
+
+  /* FOOTER */
+  .footer {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 12px 40px 40px;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  @media (max-width: 640px) {
+    .header { padding: 20px; }
+    .principle { padding: 10px 20px; }
+    .tabs-wrap { padding: 0 20px; }
+    .main { padding: 20px; }
+    .choose-grid { grid-template-columns: 1fr; }
+    .verify-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-tag">KSA · 2025.04.13–14 · 역삼</div>
+    <div class="header-title">[AI+] 기획·보고서에 바로 쓰는 데이터 인사이트 분석 실무</div>
+    <div class="header-sub">실습별 AI 프롬프트 3단계 가이드 — 복붙용 · 강의 현장 참고</div>
+  </div>
+</div>
+
+<div class="principle">
+  <div class="principle-inner">
+    <div class="principle-label">사용 순서</div>
+    <div class="principle-steps">
+      <div class="pstep s1">
+        <div class="pstep-num">1</div>
+        첫 프롬프트
+      </div>
+      <div class="parrow">→</div>
+      <div class="pstep s2">
+        <div class="pstep-num">2</div>
+        레드팀 검증
+      </div>
+      <div class="parrow">→</div>
+      <div class="pstep s3">
+        <div class="pstep-num">3</div>
+        취사선택
+      </div>
+    </div>
+    <div class="principle-label" style="margin-left: auto;">사람 초안 → AI 검토 → 사람 최종안</div>
+  </div>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab(0)"><span class="tag-num">실습1</span>기술통계</button>
+    <button class="tab" onclick="showTab(1)"><span class="tag-num">실습3</span>교차분석</button>
+    <button class="tab" onclick="showTab(2)"><span class="tag-num">실습5</span>신뢰구간</button>
+    <button class="tab" onclick="showTab(3)"><span class="tag-num">실습6</span>VoC 텍스트</button>
+    <button class="tab" onclick="showTab(4)"><span class="tag-num">실습7</span>ABC 분석</button>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ===================== 실습1: 기술통계 ===================== -->
+<div class="panel active" id="panel-0">
+  <div class="practice-header">
+    <div class="practice-label">실습 1 · 1일차</div>
+    <div class="practice-title">업체별 구매금액 기술통계 요약</div>
+    <div class="practice-desc">Excel 피벗·기술통계 완료 후 → <strong>보고서 문장 자동작성</strong><br>완료 후 바뀌는 것: 표 20개 대신 KPI 카드 6개로 보고서가 되는 요약</div>
+  </div>
+
+  <div class="stages">
+    <!-- STEP 1 -->
+    <div class="stage-card step1">
+      <div class="stage-header">
+        <div class="stage-badge">1</div>
+        <div class="stage-title-wrap">
+          <div class="stage-type">첫 프롬프트</div>
+          <div class="stage-title">Excel 완료 후 즉시 복붙 — 기술통계 결과 정리 요청</div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-context">💡 실습1 피벗/기술통계 요약표(평균, 표준편차, CV, 추이)를 복사한 뒤 [표 붙여넣기] 자리에 붙여넣으세요.</div>
+        <div class="prompt-block">
+          <div class="prompt-label">📋 기술통계 → 보고서 문장 자동작성 <button class="copy-btn" onclick="copyPrompt(this, 'p1a')">복사</button></div>
+          <div class="prompt-text" id="p1a"><span class="hl">아래는 협력업체별 구매 기술통계 결과입니다.</span>
+
+<span class="placeholder">[표 붙여넣기]</span>
+
+<span class="hl-blue">납기지연율이 문제가 되는 분류·업체·담당자 조합을
+지연율 높은 순으로 정리해주세요.</span>
+각 조합에 대해 조치 우선순위 의견도 한 줄씩 추가해주세요.</div>
+        </div>
+        <div class="prompt-block">
+          <div class="prompt-label">📋 KPI 정의·해석 문장 생성 <button class="copy-btn" onclick="copyPrompt(this, 'p1b')">복사</button></div>
+          <div class="prompt-text" id="p1b">너는 실무 보고서 편집자다.
+아래 KPI 목록에 대해 각각
+<span class="hl">1) 중2 수준 정의 1 문장
+2) 해석 1 줄 (높음/낮음 의미)
+3) 오해 방지 1 줄 (주의)</span>
+로 정리해줘.
+
+[KPI]
+<span class="placeholder">- 실구매금액
+- 구매빈도
+- 건당 구매금액
+- 불량률
+- 납기지연율
+- 할인적용율</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="stage-card step2">
+      <div class="stage-header">
+        <div class="stage-badge">2</div>
+        <div class="stage-title-wrap">
+          <div class="stage-type">레드팀 검증</div>
+          <div class="stage-title">AI가 내놓은 결과를 반대 방향에서 공격 — 과대해석 방지</div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-context">⚠️ AI 결과를 받은 후, 수치가 이상하거나 "과감한 해석"이 보이면 이 프롬프트로 재질문하세요.</div>
+        <div class="prompt-block">
+          <div class="prompt-label">🔴 레드팀 — 과대해석 방지 요청 <button class="copy-btn" onclick="copyPrompt(this, 'p1c')">복사</button></div>
+          <div class="prompt-text" id="p1c"><span class="hl-blue">[STEP 1 AI 결과물 붙여넣기]</span>
+
+위 요약에서 <span class="hl">과대해석 위험</span>이 있는 표현을 찾아줘.
+다음 세 가지 관점에서 각각 지적해줘:
+
+1. <span class="hl">N이 너무 적은데</span> '추세' 또는 '경향'으로 단정한 부분
+2. <span class="hl">상관≠인과인데</span> 원인처럼 서술한 부분
+3. 추가 확인 없이 <span class="hl">단정 결론</span>으로 쓴 부분
+
+각 항목마다: 문제 문장 → 수정 제안 1줄 형식으로.</div>
+        </div>
+
+        <div class="verify-row">
+          <div class="verify-box a">
+            <div class="verify-label">A형 · 팩트 체크</div>
+            <div class="verify-item">AI가 쓴 수치가 내 엑셀 원본과 일치하는가?</div>
+            <div class="verify-item">'증가/감소' 방향이 맞는가?</div>
+            <div class="verify-item">비율(%) 계산이 정확한가?</div>
+          </div>
+          <div class="verify-box b">
+            <div class="verify-label">B형 · 맥락 체크</div>
+            <div class="verify-item">'제안' 항목이 우리 조직에서 실행 가능한가?</div>
+            <div class="verify-item">과대해석이 있는가? (예: N=5인데 '뚜렷한 추세')</div>
+            <div class="verify-item">빠진 맥락이 있는가? (계절효과, 이벤트 등)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="stage-card step3">
+      <div class="stage-header">
+        <div class="stage-badge">3</div>
+        <div class="stage-title-wrap">
+          <div class="stage-type">취사선택</div>
+          <div class="stage-title">상황에 따라 골라 쓰는 추가 프롬프트</div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="choose-grid">
+          <div class="choose-option">
+            <div class="choose-situation">📌 보고서 마감이 급할 때</div>
+            <div class="choose-desc">→ 3줄 요약 프롬프트로 바로 보고서 초안 완성</div>
+          </div>
+          <div class="choose-option">
+            <div class="choose-situation">📌 분석 방향을 더 넓히고 싶을 때</div>
+            <div class="choose-desc">→ Top/Bottom 원인 후보 질문으로 다음 분석 설계</div>
+          </div>
+        </div>
+        <div class="prompt-block" style="margin-top:12px">
+          <div class="prompt-label">📋 보고서용 3줄 요약 (결론-근거-리스크) <button class="copy-btn" onclick="copyPrompt(this, 'p1d')">복사</button></div>
+          <div class="prompt-text" id="p1d">아래 KPI 카드와 Top/Bottom 결과를 바탕으로
+보고서에 붙일 <span class="hl">3줄 요약</span>을 써줘.
+
+형식: <span class="hl-blue">결론 → 근거 → 리스크</span>
+단정·과장 금지. 확인이 필요한 부분은 명시.
+
+[내용]
+<span class="placeholder">[AI 결과물 붙여넣기]</span></div>
+        </div>
+        <div class="prompt-block">
+          <div class="prompt-label">📋 Top/Bottom 원인 후보 질문 <button class="copy-btn" onclick="copyPrompt(this, 'p1e')">복사</button></div>
+          <div class="prompt-text" id="p1e">아래 Top/Bottom 결과를 보고,
+<span class="hl">'추가로 확인해야 할 질문' 7개</span>를 우선순위로 뽑아줘.
+질문은 데이터로 확인 가능한 형태로.
+
+[결과]
+<span class="placeholder">[Top/Bottom 분석 결과 붙여넣기]</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 실습3: 교차분석 ===================== -->
+<div class="panel" id="panel-1">
+  <div class="practice-header">
+    <div class="practice-label">실습 3 · 1일차</div>
+    <div class="practice-title">교차분석 → 가설 리스트 + 확인과제 자동생성</div>
+    <div class="practice-desc">교차표 완성 후 → <strong>가설 3개 + 추가 확인 데이터 자동 생성</strong><br>완료 후 바뀌는 것: '무슨 일이냐'에서 '왜 그러냐'로 넘어가는 최소 세트 완성</div>
+  </div>
+
+  <div class="stages">
+    <div class="stage-card step1">
+      <div class="stage-header">
+        <div class="stage-badge">1</div>
+        <div class="stage-title-wrap">
+          <div class="stage-type">첫 프롬프트</div>
+          <div class="stage-title">교차표 → 가설 + 확인 과제 자동생성</div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-context">💡 실습3 피벗테이블 교차표를 완성한 후 결과를 복사해 [교차표 붙여넣기] 자리에 붙여넣으세요.</div>
+        <div class="prompt-block">
+          <div class="prompt-label">📋 교차분석 가설 리스트 생성 <button class="copy-btn" onclick="copyPrompt(this, 'p3a')">복사</button></div>
+          <div class="prompt-text" id="p3a">나는 구매기획담당자다.
+
+<span class="placeholder">[교차표 붙여넣기]</span>
+
+<span class="hl">① 이 교차표에서 읽을 수 있는 가설 3개를
+   "~할수록 ~하다" 형태로 써줘</span>
+<span class="hl-blue">② 각 가설을 확인하려면 추가로 어떤
+   데이터가 필요한지 제안해줘</span>
+<span class="hl-green">③ 가설 우선순위를 정하고 근거를 써줘</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-card step2">
+      <div class="stage-header">
+        <div class="stage-badge">2</div>
+        <div class="stage-title-wrap">
+          <div class="stage-type">레드팀 검증</div>
+          <div class="stage-title">AI 가설을 반대 방향에서 검증 — 과대해석 탐지</div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-context">⚠️ AI가 내놓은 가설이 "그럴싸해 보이지만" 수치와 맞지 않을 수 있습니다. 반드시 이 프롬프트로 검증하세요.</div>
+        <div class="prompt-block">
+          <div class="prompt-label">🔴 레드팀 — 차이 해석 과대해석 방지 <button class="copy-btn" onclick="copyPrompt(this, 'p3b')">복사</button></div>
+          <div class="prompt-text" id="p3b">너는 <span class="hl">데이터 해석 레드팀</span>이다.
+아래 교차표/그래프 요약을 보고
+
+<span class="hl">1) 가능한 해석 3개</span>
+<span class="hl-blue">2) 과대해석 위험 3개</span>
+<span class="hl-green">3) 추가 확인 데이터/분석 5개</span>
+
+를 제시해줘.
+
+[교차표 요약]
+<span class="placeholder">[교차표 + STEP 1 AI 가설 붙여넣기]</span></div>
+        </div>
+        <div class="verify-row">
+          <div class="verify-box a">
+            <div class="verify-label">A형 · 팩트 체크</div>
+            <div class="verify-item">AI 가설의 방향(증가/감소)이 교차표와 일치?</div>
+            <div class="verify-item">AI가 언급한 셀 값이 실제 교차표와 동일?</div>
+            <div class="verify-item">전체 합계 대비 비중을 과장하지 않았는가?</div>
+          </div>
+          <div class="verify-box b">
+            <div class="verify-label">B형 · 맥락 체크</div>
+            <div class="verify-item">이미 알고 있는 사실을 '인사이트'로 포장?</div>
+            <div class="verify-item">교차표의 셀 수(N)가 충분한 근거가 되는가?</div>
+            <div class="verify-item">제3 변수(혼란변수) 가능성을 무시하지 않았는가?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-card step3">
+      <div class="stage-header">
+        <div class="stage-badge">3</div>
+        <div class="stage-title-wrap">
+          <div class="stage-type">취사선택</div>
+          <div class="stage-title">검증 후 보고서로 연결할 때 선택적으로 사용</div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="choose-grid">
+          <div class="choose-option">
+            <div class="choose-situation">📌 원인 가설을 문장으로 굳혀야 할 때</div>
+            <div class="choose-desc">→ 원인 후보 문장 템플릿으로 보고서 초안 완성</div>
+          </div>
+          <div class="choose-option">
+            <div class="choose-situation">📌 분석 결과를 팀장에게 즉시 공유해야 할 때</div>
+            <div class="choose-desc">→ 가설 → 액션 과제 형식으로 변환 요청</div>
+          </div>
+        </div>
+        <div class="prompt-block" style="margin-top:12px">
+          <div class="prompt-label">📋 원인 후보 문장 템플릿 채우기 <button class="copy-btn" onclick="copyPrompt(this, 'p3c')">복사</button></div>
+          <div class="prompt-text" id="p3c">아래 템플릿을 채워서 <span class="hl">원인 후보 3개</span>를 만들어줘.
+각 후보는 <span class="hl-blue">결론 1줄 + 근거 2개 + 추가 확인 1개</span>.
+
+[템플릿]
+- 후보 1: 결론 / 근거① / 근거② / 추가 확인
+- 후보 2: 결론 / 근거① / 근거② / 추가 확인
+- 후보 3: 결론 / 근거① / 근거② / 추가 확인
+
+[데이터 근거]
+<span class="placeholder">[교차표 + AI 가설 붙여넣기]</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 실습5: 신뢰구간 ===================== -->
+<div class="panel" id="panel-2">
+  <div class="practice-header">
+    <div class="practice-label">실습 5-1 · 2일차</div>
+    <div class="practice-title">이상치 기준 비교 → 팀장 보고용 권고문</div>
+    <div class="practice-desc">3가지 방법으로 이상치 탐지 완료 후 → <strong>방법 비교 + 팀장 보고 메모 자동생성</strong><br>완료 후 바뀌는 것: '좋아 보인다/나빠 보인다'를 '확정/보류'로 나누는 기준 확보</div>
+  </div>
+
+  <div class="stages">
+    <div class="stage-card step1">
+      <div class="stage-header">
+        <div class="stage-badge">1</div>
+        <div class="stage-title-wrap">
+          <div class="stage-type">첫 프롬프트</div>
+          <div class="stage-title">3가지 이상치 방법 비교 + 보고서 초안 요청</div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-context">💡 Excel에서 ①가격 상하한, ②가격변동 상하한, ③예측치 오차 기준으로 이상치 탐지 결과를 각각 복사해두세요.</div>
+        <div class="prompt-block">
+          <div class="prompt-label">📋 이상치 방법 비교 + 팀장 보고 메모 <button class="copy-btn" onclick="copyPrompt(this, 'p5a')">복사</button></div>
+          <div class="prompt-text" id="p5a">나는 희토류 가격 모니터링 담당자다.
+
+<span class="placeholder">[방법1·2·3 결과 붙여넣기]</span>
+
+<span class="hl">① 각 방법의 장단점을 비교표로 정리해줘</span>
+   기준: 민감도 / 오탐 가능성 / 운영 편의성
+
+<span class="hl-blue">② 주간 모니터링 목적에 적합한 방법을 추천하고
+   근거를 설명해줘. 다른 대안이 있다면 함께 제시해줘.</span>
+
+<span class="hl-green">③ 위 내용을 팀장 보고용 1페이지 메모로 작성해줘.
+   구성: 현황 요약 → 방법 비교 → 추천안 → 운영계획</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-card step2">
+      <div class="stage-header">
+        <div class="stage-badge">2</div>
+        <div class="stage-title-wrap">
+          <div class="stage-type">레드팀 검증</div>
+          <div class="stage-title">결론을 확정/보류/추가확인으로 라벨링</div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-context">⚠️ AI 보고서 초안에서 "단정 표현"을 찾아 검증하세요. 신뢰구간이 겹치면 단정 보류가 원칙입니다.</div>
+        <div class="prompt-block">
+          <div class="prompt-label">🔴 레드팀 — 결론 라벨링 (확정/보류/추가확인) <button class="copy-btn" onclick="copyPrompt(this, 'p5b')">복사</button></div>
+          <div class="prompt-text" id="p5b">너는 보고서 검수자다.
+아래 결과를 보고 결론을
+
+<span class="hl">1) 확정 (근거 충분)</span>
+<span class="hl-blue">2) 보류 (근거 부족)</span>
+<span class="hl-green">3) 추가확인 (다음 액션)</span>
+
+으로 나눠 <span class="hl">5줄</span>로 써줘.
+
+[결과]
+<span class="placeholder">[STEP 1 AI 보고서 초안 붙여넣기]</span></div>
+        </div>
+        <div class="verify-row">
+          <div class="verify-box a">
+            <div class="verify-label">A형 · 비교표 팩트 체크</div>
+            <div class="verify-item">AI가 정리한 장단점이 내 체감과 맞는지 확인</div>
+            <div class="verify-item">비교표의 수치(탐지건수, 오탐수)가 내 엑셀 결과와 일치?</div>
+            <div class="verify-item">AI가 제안한 대안 방법 설명이 교과서적으로 맞는가?</div>
+          </div>
+          <div class="verify-box b">
+            <div class="verify-label">B형 · 우리 맥락 반영</div>
+            <div class="verify-item">예측 모델을 매주 갱신할 여력이 있는가?</div>
+            <div class="verify-item">방법2(변동률)가 우리 보고 주기에 오히려 적합하지 않은가?</div>
+            <div class="verify-item">보고서 '추천안'을 우리 상황에 맞게 수정하면 결론이 달라지는가?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-card step3">
+      <div class="stage-header">
+        <div class="stage-badge">3</div>
+        <div class="stage-title-wrap">
+          <div class="stage-type">취사선택</div>
+          <div class="stage-title">이상값 원인 추가 탐색이 필요할 때</div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="choose-grid">
+          <div class="choose-option">
+            <div class="choose-situation">📌 이상값이 왜 튀었는지 모를 때</div>
+            <div class="choose-desc">→ 원인 후보 8개 생성 프롬프트 사용</div>
+          </div>
+          <div class="choose-option">
+            <div class="choose-situation">📌 이미 원인은 알고 보고서만 빠르게 완성할 때</div>
+            <div class="choose-desc">→ STEP 1 결과를 그대로 편집해서 제출</div>
+          </div>
+        </div>
+        <div class="prompt-block" style="margin-top:12px">
+          <div class="prompt-label">📋 이상값 원인 후보 리스트 <button class="copy-btn" onclick="copyPrompt(this, 'p5c')">복사</button></div>
+          <div class="prompt-text" id="p5c">아래 이상값 사례(값/날짜/대상)를 보고,
+<span class="hl">가능한 원인 후보 8개</span>를 제시해줘.
+원인은 <span class="hl-blue">'데이터 오류'</span>와 <span class="hl-green">'실제 이벤트'</span>로 나눠줘.
+
+[이상값 사례]
+<span class="placeholder">[이상치 탐지 결과 붙여넣기]</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 실습6: VoC ===================== -->
+<div class="panel" id="panel-3">
+  <div class="practice-header">
+    <div class="practice-label">실습 6 · 2일차</div>
+    <div class="practice-title">VoC 텍스트 → 라벨 생성 + 자동 분류</div>
+    <div class="practice-desc">설문/VOC 텍스트 준비 후 → <strong>카테고리 생성 + 자동 분류 + 우선순위</strong><br>완료 후 바뀌는 것: '문장 더미'를 '이슈 5개'로 바꿔 의사결정 자료화</div>
+  </div>
+
+  <div class="stages">
+    <div class="stage-card step1">
+      <div class="stage-header">
+        <div class="stage-badge">1</div>
+        <div class="stage-title-wrap">
+          <div class="stage-type">첫 프롬프트</div>
+          <div class="stage-title">VOC → 카테고리 생성 + 자동 분류 + 우선순위</div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-context">💡 설문 자유응답, CS 로그, 클레임 메모 등 20~30건을 준비해 [VOC 텍스트 붙여넣기] 자리에 넣으세요.</div>
+        <div class="prompt-block">
+          <div class="prompt-label">📋 VOC 카테고리 + 자동 분류 <button class="copy-btn" onclick="copyPrompt(this, 'p6a')">복사</button></div>
+          <div class="prompt-text" id="p6a">나는 고객경험 담당자다.
+
+<span class="placeholder">[VOC 텍스트 20건 붙여넣기]</span>
+
+<span class="hl">① 이 VOC를 분류할 수 있는
+   카테고리 5~7개를 만들어줘 (MECE)</span>
+<span class="hl-blue">② 각 VOC를 분류하고 근거 1줄씩 써줘</span>
+<span class="hl-green">③ 카테고리별 건수와 우선순위를 정리해줘</span></div>
+        </div>
+        <div class="prompt-block">
+          <div class="prompt-label">📋 이슈 태그 사전 만들기 (심화) <button class="copy-btn" onclick="copyPrompt(this, 'p6b')">복사</button></div>
+          <div class="prompt-text" id="p6b">너는 VoC 분석가다.
+아래 자유응답 30개를 보고
+
+<span class="hl">1) 이슈 태그 10개 (서로 겹치지 않게)</span>
+<span class="hl-blue">2) 각 태그 정의 1줄</span>
+<span class="hl-green">3) 대표 키워드 5개</span>
+
+를 만들어줘.
+
+[응답 샘플]
+<span class="placeholder">[자유응답 텍스트 붙여넣기]</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-card step2">
+      <div class="stage-header">
+        <div class="stage-badge">2</div>
+        <div class="stage-title-wrap">
+          <div class="stage-type">레드팀 검증</div>
+          <div class="stage-title">분류 체계 MECE 검증 — 겹침·누락 확인</div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-context">⚠️ '기타' 비중이 30% 이상이면 카테고리 재설계가 필요합니다. 반드시 원문 5건을 직접 읽고 분류 결과를 확인하세요.</div>
+        <div class="prompt-block">
+          <div class="prompt-label">🔴 레드팀 — MECE 검증 + 분류 오류 탐지 <button class="copy-btn" onclick="copyPrompt(this, 'p6c')">복사</button></div>
+          <div class="prompt-text" id="p6c"><span class="hl-blue">[STEP 1 AI 분류 결과 붙여넣기]</span>
+
+위 분류 체계의 <span class="hl">빈틈을 찾아줘</span>.
+다음 세 가지를 각각 확인해줘:
+
+1. <span class="hl">MECE 위반</span> — 겹치는 카테고리나 빠진 유형이 있는가?
+2. <span class="hl">분류 오류 후보</span> — 원문과 카테고리가 어울리지 않는 건수 3개
+3. <span class="hl">우선순위 재검토</span> — 건수가 아닌 '심각도' 기준으로 바꾸면
+   순위가 달라지는가?
+
+찬성 의견 말고 구조의 빈틈만 짚어줘.</div>
+        </div>
+        <div class="verify-row">
+          <div class="verify-box a">
+            <div class="verify-label">A형 · 팩트 체크</div>
+            <div class="verify-item">카테고리가 MECE (빠짐없이, 겹침없이)인가?</div>
+            <div class="verify-item">1개 VOC가 2개 카테고리에 동시 분류된 건 없는가?</div>
+            <div class="verify-item">'기타'가 30% 이상이면 카테고리 재설계 필요</div>
+          </div>
+          <div class="verify-box b">
+            <div class="verify-label">B형 · 맥락 체크</div>
+            <div class="verify-item">내가 원문 5건을 직접 읽고 분류하면 AI와 같은가?</div>
+            <div class="verify-item">업종 특유의 용어를 AI가 잘못 해석한 건 없는가?</div>
+            <div class="verify-item">우선순위가 건수 기준인가, 심각도 기준인가?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-card step3">
+      <div class="stage-header">
+        <div class="stage-badge">3</div>
+        <div class="stage-title-wrap">
+          <div class="stage-type">취사선택</div>
+          <div class="stage-title">개별 라벨링 실행 — 대규모 텍스트에 적용할 때</div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="choose-grid">
+          <div class="choose-option">
+            <div class="choose-situation">📌 카테고리 확정 후 대량 분류할 때</div>
+            <div class="choose-desc">→ 라벨링 실행 프롬프트로 한 건씩 처리</div>
+          </div>
+          <div class="choose-option">
+            <div class="choose-situation">📌 정량 데이터와 연결해야 할 때</div>
+            <div class="choose-desc">→ 이슈별 만족도/불량률 연결 요청 추가</div>
+          </div>
+        </div>
+        <div class="prompt-block" style="margin-top:12px">
+          <div class="prompt-label">📋 라벨링 실행 프롬프트 (대량 처리) <button class="copy-btn" onclick="copyPrompt(this, 'p6d')">복사</button></div>
+          <div class="prompt-text" id="p6d">아래 텍스트를 주면,
+너는 <span class="hl">각 문장을 1개 태그로만 분류</span>한다.
+태그 목록 밖이면 <span class="hl-blue">'기타'</span>로.
+
+[태그 목록]
+<span class="placeholder">- [STEP 1에서 확정한 카테고리 목록 붙여넣기]</span>
+
+[분류할 텍스트]
+<span class="placeholder">[VOC 텍스트 붙여넣기]</span>
+
+출력 형식: 번호 | 텍스트 요약 | 태그 | 근거 1줄</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 실습7: ABC 분석 ===================== -->
+<div class="panel" id="panel-4">
+  <div class="practice-header">
+    <div class="practice-label">실습 7 · 2일차</div>
+    <div class="practice-title">ABC 분석 → 액션플랜(담당/기한/지표) 자동생성</div>
+    <div class="practice-desc">ABC 등급 분류 + 인센티브 시뮬레이션 완료 후 → <strong>등급별 차별 전략 + 실행 계획</strong><br>완료 후 바뀌는 것: '다 해라' 대신 '무엇부터'가 결정되는 구조 구축</div>
+  </div>
+
+  <div class="stages">
+    <div class="stage-card step1">
+      <div class="stage-header">
+        <div class="stage-badge">1</div>
+        <div class="stage-title-wrap">
+          <div class="stage-type">첫 프롬프트</div>
+          <div class="stage-title">ABC 등급별 관리전략 + 액션플랜 생성</div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-context">💡 실습7 ABC 분석 결과(등급별 고객 목록 + 인센티브 시뮬레이션)를 복사해 [붙여넣기] 자리에 넣으세요.</div>
+        <div class="prompt-block">
+          <div class="prompt-label">📋 ABC 액션플랜 자동생성 <button class="copy-btn" onclick="copyPrompt(this, 'p7a')">복사</button></div>
+          <div class="prompt-text" id="p7a">나는 유통회사 구매기획담당자다.
+
+<span class="placeholder">[ABC 등급 결과 + 인센티브 시뮬레이션 붙여넣기]</span>
+
+<span class="hl">① 등급별 차별적 관리전략을 표로 정리해줘</span>
+   (관리항목, 담당, 기한, KPI)
+<span class="hl-blue">② A등급 이탈방지를 위한 액션 3개를 제안해줘</span>
+<span class="hl-green">③ 전체 예산 내에서 인센티브 배분 최적안을 제시해줘</span></div>
+        </div>
+        <div class="prompt-block">
+          <div class="prompt-label">📋 ABC 기준 제안 (분류 기준 설계 시) <button class="copy-btn" onclick="copyPrompt(this, 'p7b')">복사</button></div>
+          <div class="prompt-text" id="p7b">아래 대상별 값(Spend)과 누적비율을 보고
+<span class="hl">ABC 기준을 제안</span>해줘.
+
+단, 현실 운영 관점에서
+<span class="hl-blue">A에 들어가는 항목 수가 너무 많거나
+너무 적지 않게</span> 조정해줘.
+
+[표]
+<span class="placeholder">[대상별 Spend + 누적비율 붙여넣기]</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-card step2">
+      <div class="stage-header">
+        <div class="stage-badge">2</div>
+        <div class="stage-title-wrap">
+          <div class="stage-type">레드팀 검증</div>
+          <div class="stage-title">AI 전략의 실행 가능성 공격 — KPI·기한·예산 타당성 검증</div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-context">⚠️ AI가 제안한 '담당·기한·KPI'가 실제 우리 조직에서 작동하는지 반드시 B형 맥락 체크를 수행하세요.</div>
+        <div class="prompt-block">
+          <div class="prompt-label">🔴 레드팀 — 액션플랜 실행 가능성 공격 <button class="copy-btn" onclick="copyPrompt(this, 'p7c')">복사</button></div>
+          <div class="prompt-text" id="p7c"><span class="hl-blue">[STEP 1 AI 액션플랜 붙여넣기]</span>
+
+위 액션플랜의 <span class="hl">실행 불가 리스크</span>를 찾아줘.
+다음 세 가지를 각각 짚어줘:
+
+1. <span class="hl">KPI 측정 불가</span> — 현재 데이터로 측정할 수 없는 KPI가 있는가?
+2. <span class="hl">권한·예산 초과</span> — 우리 팀 권한 밖이거나 예산을 초과하는 항목
+3. <span class="hl">기한 비현실</span> — 조직 의사결정 속도로 불가능한 기한
+
+찬성 의견 말고 실행 장벽만 짚어줘.</div>
+        </div>
+        <div class="verify-row">
+          <div class="verify-box a">
+            <div class="verify-label">A형 · 팩트 체크</div>
+            <div class="verify-item">AI가 제안한 KPI가 현재 데이터로 측정 가능한가?</div>
+            <div class="verify-item">등급 기준(70/90/100%)이 우리 업종에 적합한가?</div>
+            <div class="verify-item">인센티브 총액이 예산 범위 내인가?</div>
+          </div>
+          <div class="verify-box b">
+            <div class="verify-label">B형 · 맥락 체크</div>
+            <div class="verify-item">'담당' 컬럼의 부서/역할이 우리 조직에 존재하는가?</div>
+            <div class="verify-item">'기한'이 현실적인가? (1주? 분기?)</div>
+            <div class="verify-item">A등급 전략이 기존 고객 관리 방식과 충돌하지 않는가?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-card step3">
+      <div class="stage-header">
+        <div class="stage-badge">3</div>
+        <div class="stage-title-wrap">
+          <div class="stage-type">취사선택</div>
+          <div class="stage-title">2x2 매트릭스 전략 설계 — 심화 분석이 필요할 때</div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="choose-grid">
+          <div class="choose-option">
+            <div class="choose-situation">📌 우선순위 매트릭스 전략을 빠르게 설계할 때</div>
+            <div class="choose-desc">→ 2x2 사분면 액션 룰 프롬프트 사용</div>
+          </div>
+          <div class="choose-option">
+            <div class="choose-situation">📌 보고서 없이 구두 보고만 할 때</div>
+            <div class="choose-desc">→ STEP 1 결과를 직접 요약해서 발표</div>
+          </div>
+        </div>
+        <div class="prompt-block" style="margin-top:12px">
+          <div class="prompt-label">📋 2×2 사분면 액션 룰 설계 <button class="copy-btn" onclick="copyPrompt(this, 'p7d')">복사</button></div>
+          <div class="prompt-text" id="p7d">가치×리스크 <span class="hl">2×2 매트릭스</span>의
+각 사분면별로
+
+<span class="hl">1) 추천 액션</span>
+<span class="hl-blue">2) 체크해야 할 리스크</span>
+<span class="hl-green">3) 다음 데이터 요구</span>
+
+를 <span class="hl">3줄씩</span> 작성해줘.
+
+사분면 정의:
+- 고가치×저리스크: 즉시 실행
+- 고가치×고리스크: 실험·관리
+- 저가치×저리스크: 관찰·유지
+- 저가치×고리스크: 중단 검토</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<div class="footer">
+  AI accelerates · Humans judge &nbsp;|&nbsp; 백승훈 강사 · KSA 2025.04.13–14
+</div>
+
+<script>
+function showTab(idx) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', i === idx);
+  });
+  document.querySelectorAll('.panel').forEach((p, i) => {
+    p.classList.toggle('active', i === idx);
+  });
+}
+
+function copyPrompt(btn, id) {
+  const el = document.getElementById(id);
+  const text = el.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ 복사됨';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '복사';
+      btn.classList.remove('copied');
+    }, 1800);
+  });
+}
+</script>
+</body>
+</html>
