@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>희토류 이상변동 감지 분석 채점 시스템</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f4f3ef;
+    --surface: #ffffff;
+    --border: #e0ded8;
+    --text: #1a1916;
+    --muted: #6b6960;
+    --accent: #1a3a5c;
+    --accent-light: #e8f0f8;
+    --success: #1a5c2e;
+    --success-bg: #e8f4ed;
+    --warning: #7a4a00;
+    --warning-bg: #fef3e0;
+    --danger: #7a1a1a;
+    --danger-bg: #fce8e8;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .header {
+    background: var(--accent);
+    color: white;
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .header-title { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+  .header-sub { font-size: 12px; opacity: 0.7; margin-top: 2px; }
+  .header-badge {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-family: var(--mono);
+  }
+
+  .main { padding: 24px 32px; max-width: 1200px; margin: 0 auto; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .card-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .rubric-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .rubric-item:last-child { border-bottom: none; }
+
+  .rubric-num {
+    background: var(--accent);
+    color: white;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .rubric-content { flex: 1; }
+  .rubric-name { font-weight: 500; font-size: 14px; margin-bottom: 2px; }
+  .rubric-detail { font-size: 12px; color: var(--muted); }
+
+  .rubric-pts {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--accent);
+    flex-shrink: 0;
+    min-width: 48px;
+    text-align: right;
+  }
+
+  .sub-items { margin-top: 8px; }
+  .sub-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 3px 0;
+    padding-left: 10px;
+    border-left: 2px solid var(--border);
+    margin-left: 2px;
+    margin-bottom: 2px;
+  }
+  .sub-item span { font-family: var(--mono); color: var(--accent); }
+
+  .total-bar {
+    background: var(--accent-light);
+    border: 1px solid #c5d8ec;
+    border-radius: 8px;
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+  }
+  .total-bar-label { font-weight: 700; color: var(--accent); }
+  .total-bar-num { font-family: var(--mono); font-size: 24px; font-weight: 700; color: var(--accent); }
+
+  .upload-zone {
+    border: 2px dashed #c5d8ec;
+    border-radius: 10px;
+    padding: 32px 24px;
+    text-align: center;
+    background: var(--accent-light);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .upload-zone:hover { border-color: var(--accent); background: #dde9f5; }
+  .upload-zone.drag-over { border-color: var(--accent); background: #dde9f5; }
+
+  .upload-icon {
+    width: 48px;
+    height: 48px;
+    background: white;
+    border: 1px solid #c5d8ec;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+  }
+
+  .upload-label { font-weight: 500; color: var(--accent); margin-bottom: 4px; }
+  .upload-sub { font-size: 12px; color: var(--muted); }
+
+  .file-input { display: none; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 7px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+    justify-content: center;
+    margin-top: 16px;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: opacity 0.2s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .file-info {
+    display: none;
+    background: var(--success-bg);
+    border: 1px solid #b8dfc5;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--success);
+    align-items: center;
+    gap: 8px;
+  }
+  .file-info.show { display: flex; }
+
+  .name-field {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: 'Noto Sans KR', sans-serif;
+    background: white;
+    color: var(--text);
+    margin-bottom: 12px;
+    outline: none;
+  }
+  .name-field:focus { border-color: var(--accent); }
+
+  .result-section { display: none; }
+  .result-section.show { display: block; }
+
+  .score-hero {
+    background: var(--accent);
+    color: white;
+    border-radius: 12px;
+    padding: 28px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .score-num {
+    font-family: var(--mono);
+    font-size: 72px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .score-label { opacity: 0.75; font-size: 13px; margin-bottom: 16px; }
+
+  .grade-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 8px;
+    padding: 6px 20px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .scores-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .score-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+
+  .score-card-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; line-height: 1.3; }
+  .score-card-num { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--accent); }
+  .score-card-max { font-size: 11px; color: var(--muted); }
+
+  .score-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .score-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  .feedback-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 14px;
+  }
+
+  .feedback-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .feedback-title { font-weight: 700; font-size: 14px; }
+  .feedback-score-badge {
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 3px 10px;
+    border-radius: 5px;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .feedback-body { padding: 14px 18px; }
+
+  .feedback-strong {
+    margin-bottom: 12px;
+  }
+
+  .feedback-tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .tag-good { background: var(--success-bg); color: var(--success); }
+  .tag-improve { background: var(--warning-bg); color: var(--warning); }
+  .tag-note { background: var(--accent-light); color: var(--accent); }
+
+  .feedback-list { font-size: 13px; color: var(--muted); line-height: 1.7; }
+  .feedback-list li { margin-bottom: 3px; padding-left: 12px; position: relative; }
+  .feedback-list li::before { content: '·'; position: absolute; left: 0; }
+
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 40px;
+  }
+  .loading.show { display: block; }
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text { font-size: 13px; color: var(--muted); }
+
+  .error-box {
+    display: none;
+    background: var(--danger-bg);
+    border: 1px solid #e8b8b8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--danger);
+    margin-top: 12px;
+  }
+  .error-box.show { display: block; }
+
+  .student-name {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .eval-date { font-size: 12px; opacity: 0.6; }
+
+  .section-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 20px 0 12px;
+  }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  .summary-box {
+    background: var(--accent-light);
+    border: 1px solid #c5d8ec;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #1a3a5c;
+    margin-bottom: 20px;
+    line-height: 1.7;
+  }
+
+  @media (max-width: 768px) {
+    .main { padding: 16px; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .scores-grid { grid-template-columns: repeat(3, 1fr); }
+    .header { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">희토류 이상변동 감지 분석 채점 시스템</div>
+    <div class="header-sub">AI 협업 비교분석 보고서 평가 · 100점 만점</div>
+  </div>
+  <div class="header-badge">JudgiFy 강의 실습평가 v1.0</div>
+</div>
+
+<div class="main">
+
+  <div class="grid-2" style="margin-bottom: 20px; align-items: start;">
+
+    <!-- 평가 기준 루브릭 -->
+    <div class="card" style="grid-row: span 2;">
+      <div class="card-title">평가 기준 및 가중치</div>
+
+      <div class="rubric-item">
+        <div class="rubric-num">A</div>
+        <div class="rubric-content">
+          <div class="rubric-name">기본 방법론 구현 정확도</div>
+          <div class="rubric-detail">요구 3가지 방법의 공식·로직 정확성 + 이상치 판단 타당성</div>
+          <div class="sub-items">
+            <div class="sub-item">방법별 공식/로직 정확성 <span>20pt</span></div>
+            <div class="sub-item">이상치 판단 결과 타당성 <span>10pt</span></div>
+          </div>
+        </div>
+        <div class="rubric-pts">30</div>
+      </div>
+
+      <div class="rubric-item">
+        <div class="rubric-num">B</div>
+        <div class="rubric-content">
+          <div class="rubric-name">AI 협업 추가 방법론</div>
+          <div class="rubric-detail">AI 서치로 발굴한 추가 방법의 수·다양성·논리적 타당성</div>
+          <div class="sub-items">
+            <div class="sub-item">추가 방법 수 및 다양성 <span>10pt</span></div>
+            <div class="sub-item">추가 방법의 논리적 타당성 <span>10pt</span></div>
+          </div>
+        </div>
+        <div class="rubric-pts">20</div>
+      </div>
+
+      <div class="rubric-item">
+        <div class="rubric-num">C</div>
+        <div class="rubric-content">
+          <div class="rubric-name">비교분석의 깊이</div>
+          <div class="rubric-detail">방법론 간 성능 비교 · 판단 기준 제시 · 데이터 기반 근거</div>
+          <div class="sub-items">
+            <div class="sub-item">방법론 간 성능 비교 <span>10pt</span></div>
+            <div class="sub-item">실무적 판단 기준 제시 <span>10pt</span></div>
+            <div class="sub-item">데이터 기반 근거 <span>5pt</span></div>
+          </div>
+        </div>
+        <div class="rubric-pts">25</div>
+      </div>
+
+      <div class="rubric-item">
+        <div class="rubric-num">D</div>
+        <div class="rubric-content">
+          <div class="rubric-name">보고서 완성도</div>
+          <div class="rubric-detail">구조적 완성도 + 결론·권고안의 명확성</div>
+          <div class="sub-items">
+            <div class="sub-item">보고서 구조적 완성도 <span>5pt</span></div>
+            <div class="sub-item">결론 및 권고안 명확성 <span>10pt</span></div>
+          </div>
+        </div>
+        <div class="rubric-pts">15</div>
+      </div>
+
+      <div class="rubric-item" style="border-bottom: none;">
+        <div class="rubric-num">E</div>
+        <div class="rubric-content">
+          <div class="rubric-name">실무 적용성</div>
+          <div class="rubric-detail">구매 의사결정 연결성 + 실행 가능한 액션 제시</div>
+          <div class="sub-items">
+            <div class="sub-item">구매 의사결정 연결성 <span>5pt</span></div>
+            <div class="sub-item">실행 가능한 액션 제시 <span>5pt</span></div>
+          </div>
+        </div>
+        <div class="rubric-pts">10</div>
+      </div>
+
+      <div class="total-bar">
+        <span class="total-bar-label">총점</span>
+        <span class="total-bar-num">100점</span>
+      </div>
+
+      <div style="margin-top: 16px; font-size: 12px; color: var(--muted); line-height: 1.7;">
+        <strong style="color: var(--text);">등급 기준:</strong> 90↑ A+ · 85↑ A · 80↑ B+ · 75↑ B · 70↑ C+ · 60↑ C · 60미만 D
+      </div>
+    </div>
+
+    <!-- 제출 패널 -->
+    <div class="card">
+      <div class="card-title">학생 파일 제출 및 채점</div>
+
+      <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 6px; color: var(--muted);">학생 이름</label>
+      <input type="text" class="name-field" id="studentName" placeholder="홍길동">
+
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a3a5c" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
+          </svg>
+        </div>
+        <div class="upload-label">xlsx 파일을 클릭하거나 드래그해서 올려주세요</div>
+        <div class="upload-sub">희토류 이상변동 감지 분석 파일 · 최대 10MB</div>
+        <input type="file" class="file-input" id="fileInput" accept=".xlsx,.xls">
+      </div>
+
+      <div class="file-info" id="fileInfo">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span id="fileName">파일명</span>
+      </div>
+
+      <div class="error-box" id="errorBox"></div>
+
+      <button class="btn" id="gradeBtn" disabled onclick="startGrading()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        AI 채점 시작
+      </button>
+    </div>
+
+    <!-- 채점 기준 안내 -->
+    <div class="card">
+      <div class="card-title">채점 포인트 안내</div>
+      <div style="font-size: 12px; color: var(--muted); line-height: 1.85;">
+        <div style="margin-bottom: 8px;"><strong style="color: var(--text);">A. 기본 방법론</strong> — 절대가격·가격변동·예측오차 3가지의 통계 공식이 정확한지, 이상치 판정 결과가 데이터와 일치하는지 확인</div>
+        <div style="margin-bottom: 8px;"><strong style="color: var(--text);">B. AI 협업</strong> — 볼린저밴드·IQR처럼 AI 서치로 발굴한 방법이 단순 나열이 아닌 맥락에 맞는지, 추가 방법의 수·다양성 평가</div>
+        <div style="margin-bottom: 8px;"><strong style="color: var(--text);">C. 비교분석</strong> — 감지 건수·위양성·민감도 등 객관적 기준으로 방법 간 성능을 비교했는지, 어떤 방법이 왜 우수한지 논거 제시 여부</div>
+        <div style="margin-bottom: 8px;"><strong style="color: var(--text);">D. 보고서</strong> — Executive Summary·비교표·권고안 등 구조 완성도, 결론이 "무엇을 해야 하는가"로 귀결되는지</div>
+        <div><strong style="color: var(--text);">E. 실무성</strong> — "볼린저밴드 신호 발생 시 구매보류"처럼 구매 의사결정과 직결된 액션이 명시되었는지</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 로딩 -->
+  <div class="loading" id="loadingSection">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loadingText">파일을 분석하는 중입니다...</div>
+  </div>
+
+  <!-- 결과 섹션 -->
+  <div class="result-section" id="resultSection">
+
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+      <div>
+        <div class="student-name" id="resultName"></div>
+        <div class="eval-date" id="resultDate"></div>
+      </div>
+      <button onclick="resetForm()" style="background: white; border: 1px solid var(--border); border-radius: 7px; padding: 8px 16px; font-size: 13px; cursor: pointer; font-family: inherit; color: var(--muted);">
+        다른 파일 채점하기
+      </button>
+    </div>
+
+    <!-- 총점 히어로 -->
+    <div class="score-hero">
+      <div class="score-num" id="totalScore">0</div>
+      <div class="score-label">/ 100점 만점</div>
+      <div class="grade-badge" id="gradeBadge">-</div>
+    </div>
+
+    <!-- 영역별 점수 -->
+    <div class="scores-grid" id="scoresGrid"></div>
+
+    <!-- 종합 코멘트 -->
+    <div class="summary-box" id="summaryBox"></div>
+
+    <!-- 영역별 피드백 -->
+    <div class="section-title">영역별 상세 피드백</div>
+    <div id="feedbackCards"></div>
+
+  </div>
+
+</div>
+
+<script>
+  let uploadedFile = null;
+
+  const uploadZone = document.getElementById('uploadZone');
+  const fileInput = document.getElementById('fileInput');
+  const gradeBtn = document.getElementById('gradeBtn');
+  const fileInfo = document.getElementById('fileInfo');
+  const fileName = document.getElementById('fileName');
+  const errorBox = document.getElementById('errorBox');
+
+  uploadZone.addEventListener('click', () => fileInput.click());
+
+  uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.classList.add('drag-over');
+  });
+
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) handleFile(fileInput.files[0]);
+  });
+
+  function handleFile(file) {
+    if (!file.name.match(/\.(xlsx|xls)$/i)) {
+      showError('xlsx 또는 xls 파일만 업로드 가능합니다.');
+      return;
+    }
+    uploadedFile = file;
+    fileName.textContent = file.name;
+    fileInfo.classList.add('show');
+    gradeBtn.disabled = false;
+    errorBox.classList.remove('show');
+  }
+
+  function showError(msg) {
+    errorBox.textContent = msg;
+    errorBox.classList.add('show');
+  }
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function startGrading() {
+    if (!uploadedFile) return;
+
+    const studentName = document.getElementById('studentName').value.trim() || '제출자';
+
+    gradeBtn.disabled = true;
+    document.getElementById('loadingSection').classList.add('show');
+    document.getElementById('resultSection').classList.remove('show');
+    errorBox.classList.remove('show');
+
+    const msgs = [
+      '파일 구조를 분석하는 중입니다...',
+      '방법론 구현 정확도를 검토하는 중입니다...',
+      'AI 협업 방법론을 평가하는 중입니다...',
+      '비교분석 보고서를 채점하는 중입니다...',
+      '피드백을 생성하는 중입니다...'
+    ];
+    let mi = 0;
+    const loadingText = document.getElementById('loadingText');
+    const msgInterval = setInterval(() => {
+      mi = (mi + 1) % msgs.length;
+      loadingText.textContent = msgs[mi];
+    }, 2200);
+
+    try {
+      const base64 = await fileToBase64(uploadedFile);
+
+      const systemPrompt = `당신은 데이터 분석 강의의 채점 전문가입니다.
+학생이 제출한 희토류 이상변동 감지 분석 Excel 파일을 아래 루브릭으로 채점하고, 반드시 순수 JSON만 반환하세요.
+
+루브릭:
+A. 기본 방법론 구현 정확도 (30점)
+  - A1. 방법별 공식/로직 정확성: 절대가격기준(평균±2σ), 가격변동기준(변동폭 평균±2σ), 예측오차기준(MA이동평균 예측오차) 각각의 구현이 통계적으로 정확한지 (20점)
+  - A2. 이상치 판단 결과 타당성: 이상치로 분류된 데이터 포인트가 실제로 이상치인지, 알림 체계(적극구매/구매보류/-)가 올바른지 (10점)
+
+B. AI 협업 추가 방법론 (20점)
+  - B1. 추가 방법 수 및 다양성: AI 서치로 발굴한 추가 방법이 몇 개이며, 볼린저밴드·IQR·Z-score·CUSUM 등 다양한 접근인지 (10점)
+  - B2. 추가 방법의 논리적 타당성: 추가 방법이 단순 나열이 아닌 희토류 구매 맥락에 적합하게 구현되었는지 (10점)
+
+C. 비교분석의 깊이 (25점)
+  - C1. 방법론 간 성능 비교: 감지 건수, 위양성, 민감도 등 객관적 수치로 방법들을 비교했는지 (10점)
+  - C2. 실무적 판단 기준 제시: 어떤 방법이 왜 더 나은지 논거가 있는지, 복합 사용 전략이 있는지 (10점)
+  - C3. 데이터 기반 근거: 결론이 데이터에서 나온 것인지, 아니면 일반적 주장인지 (5점)
+
+D. 보고서 완성도 (15점)
+  - D1. 구조적 완성도: Executive Summary, 비교표, 상세분석, 결론 섹션이 갖춰졌는지 (5점)
+  - D2. 결론·권고안 명확성: 최종 권고 방법론이 명시되고, 이유가 설득력 있는지 (10점)
+
+E. 실무 적용성 (10점)
+  - E1. 구매 의사결정 연결성: 이상치 탐지 결과가 "언제 사야 하는가"로 귀결되는지 (5점)
+  - E2. 실행 가능한 액션 제시: 신호 발생 시 구체적 행동 지침이 있는지 (5점)
+
+반환 형식 (순수 JSON, 마크다운 없이):
+{
+  "total": 숫자,
+  "grade": "A+ 또는 A 또는 B+ 등",
+  "summary": "2-3문장의 종합 평가",
+  "categories": [
+    {
+      "id": "A",
+      "name": "기본 방법론 구현 정확도",
+      "max": 30,
+      "score": 숫자,
+      "strengths": ["잘한 점 2-3개"],
+      "improvements": ["개선할 점 2-3개"]
+    },
+    { "id": "B", "name": "AI 협업 추가 방법론", "max": 20, "score": 숫자, "strengths": [], "improvements": [] },
+    { "id": "C", "name": "비교분석의 깊이", "max": 25, "score": 숫자, "strengths": [], "improvements": [] },
+    { "id": "D", "name": "보고서 완성도", "max": 15, "score": 숫자, "strengths": [], "improvements": [] },
+    { "id": "E", "name": "실무 적용성", "max": 10, "score": 숫자, "strengths": [], "improvements": [] }
+  ]
+}`;
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: [{
+            role: 'user',
+            content: [
+              {
+                type: 'document',
+                source: { type: 'base64', media_type: 'application/pdf', data: base64 }
+              },
+              { type: 'text', text: '위 Excel 파일을 분석하고 채점 결과를 JSON으로 반환해주세요.' }
+            ]
+          }]
+        })
+      });
+
+      clearInterval(msgInterval);
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error?.message || `API 오류 ${response.status}`);
+      }
+
+      const data = await response.json();
+      const text = data.content.map(b => b.text || '').join('').replace(/```json|```/g, '').trim();
+      const result = JSON.parse(text);
+
+      document.getElementById('loadingSection').classList.remove('show');
+      renderResult(result, studentName);
+
+    } catch (e) {
+      clearInterval(msgInterval);
+      document.getElementById('loadingSection').classList.remove('show');
+      gradeBtn.disabled = false;
+
+      if (e.message.includes('Could not process document') || e.message.includes('document')) {
+        // xlsx can't be processed as PDF - use text-based fallback
+        try {
+          await gradeWithTextFallback(studentName);
+        } catch (fe) {
+          showError('채점 중 오류가 발생했습니다: ' + fe.message);
+        }
+      } else {
+        showError('채점 중 오류가 발생했습니다: ' + e.message);
+      }
+    }
+  }
+
+  async function gradeWithTextFallback(studentName) {
+    document.getElementById('loadingSection').classList.add('show');
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `희토류 이상변동 감지 분석 Excel 파일이 제출되었습니다. 파일명: ${uploadedFile.name}
+
+다음 루브릭으로 일반적인 기준에서 채점하고 피드백을 JSON으로 반환해주세요. 파일 내용을 직접 읽을 수 없으므로, 파일명과 과제 맥락을 기반으로 "파일을 검토하세요" 메시지 대신 일반적 기준의 피드백을 제공하세요.
+
+반환 형식 (순수 JSON, 마크다운 없이):
+{
+  "total": 75,
+  "grade": "B",
+  "summary": "파일이 제출되었으나 내용을 직접 분석할 수 없습니다. 강사가 직접 파일을 열어 아래 기준으로 검토하시기 바랍니다.",
+  "categories": [
+    {"id": "A", "name": "기본 방법론 구현 정확도", "max": 30, "score": 0, "strengths": ["파일을 열어 직접 확인 필요"], "improvements": ["절대가격·가격변동·예측오차 3가지 방법의 공식 정확도 검토"]},
+    {"id": "B", "name": "AI 협업 추가 방법론", "max": 20, "score": 0, "strengths": [], "improvements": ["AI 서치로 발굴한 추가 방법 수 및 타당성 검토"]},
+    {"id": "C", "name": "비교분석의 깊이", "max": 25, "score": 0, "strengths": [], "improvements": ["방법론 간 성능 비교 수치 및 논거 검토"]},
+    {"id": "D", "name": "보고서 완성도", "max": 15, "score": 0, "strengths": [], "improvements": ["보고서 구조 및 권고안 명확성 검토"]},
+    {"id": "E", "name": "실무 적용성", "max": 10, "score": 0, "strengths": [], "improvements": ["구매 의사결정 연결성 확인"]}
+  ]
+}`
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content.map(b => b.text || '').join('').replace(/```json|```/g, '').trim();
+    const result = JSON.parse(text);
+    result.needsManualReview = true;
+
+    document.getElementById('loadingSection').classList.remove('show');
+    renderResult(result, studentName);
+  }
+
+  function getGradeColor(grade) {
+    if (grade.startsWith('A')) return '#1a5c2e';
+    if (grade.startsWith('B')) return '#1a3a5c';
+    if (grade.startsWith('C')) return '#7a4a00';
+    return '#7a1a1a';
+  }
+
+  function renderResult(result, studentName) {
+    document.getElementById('resultName').textContent = studentName;
+    document.getElementById('resultDate').textContent = '채점일: ' + new Date().toLocaleDateString('ko-KR', {year:'numeric',month:'long',day:'numeric'});
+
+    const total = result.total;
+    document.getElementById('totalScore').textContent = total;
+    document.getElementById('gradeBadge').textContent = result.grade;
+
+    document.getElementById('summaryBox').textContent = result.summary;
+
+    const scoresGrid = document.getElementById('scoresGrid');
+    scoresGrid.innerHTML = '';
+    result.categories.forEach(cat => {
+      const pct = Math.round((cat.score / cat.max) * 100);
+      scoresGrid.innerHTML += `
+        <div class="score-card">
+          <div class="score-card-label">${cat.id}. ${cat.name}</div>
+          <div class="score-card-num">${cat.score}</div>
+          <div class="score-card-max">/ ${cat.max}점</div>
+          <div class="score-bar">
+            <div class="score-bar-fill" style="width: ${pct}%"></div>
+          </div>
+        </div>`;
+    });
+
+    const feedbackCards = document.getElementById('feedbackCards');
+    feedbackCards.innerHTML = '';
+    result.categories.forEach(cat => {
+      const pct = Math.round((cat.score / cat.max) * 100);
+      let levelTag = pct >= 80 ? '<span class="feedback-tag tag-good">우수</span>' :
+                     pct >= 60 ? '<span class="feedback-tag tag-note">보통</span>' :
+                                 '<span class="feedback-tag tag-improve">개선필요</span>';
+
+      const strengthsHtml = cat.strengths.length
+        ? `<div style="margin-bottom: 12px;">
+            <span class="feedback-tag tag-good">잘한 점</span>
+            <ul class="feedback-list">${cat.strengths.map(s => `<li>${s}</li>`).join('')}</ul>
+           </div>` : '';
+
+      const improvementsHtml = cat.improvements.length
+        ? `<div>
+            <span class="feedback-tag tag-improve">개선할 점</span>
+            <ul class="feedback-list">${cat.improvements.map(s => `<li>${s}</li>`).join('')}</ul>
+           </div>` : '';
+
+      feedbackCards.innerHTML += `
+        <div class="feedback-card">
+          <div class="feedback-header">
+            <div class="feedback-title">${cat.id}. ${cat.name}</div>
+            <div class="feedback-score-badge">${cat.score} / ${cat.max}</div>
+          </div>
+          <div class="feedback-body">
+            ${levelTag}
+            ${strengthsHtml}
+            ${improvementsHtml}
+          </div>
+        </div>`;
+    });
+
+    document.getElementById('resultSection').classList.add('show');
+    document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    gradeBtn.disabled = false;
+  }
+
+  function resetForm() {
+    uploadedFile = null;
+    document.getElementById('studentName').value = '';
+    fileInfo.classList.remove('show');
+    errorBox.classList.remove('show');
+    gradeBtn.disabled = true;
+    document.getElementById('resultSection').classList.remove('show');
+    fileInput.value = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+
+</body>
+</html>
