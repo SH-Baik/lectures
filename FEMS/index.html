@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FEMS · 2026.04 · 마케팅, 이제는 데이터로 이야기하라</title>
+<meta name="description" content="2026 마케팅관리사 자격과정 · 8주차 — AI 프롬프트 & 핵심 자료 (복붙용)" />
+<style>
+  :root{
+    --bg:#0f172a;        /* slate-900 */
+    --panel:#111827;     /* gray-900 */
+    --panel-2:#1f2937;   /* gray-800 */
+    --ink:#e5e7eb;
+    --muted:#94a3b8;
+    --line:#1f2a44;
+    --accent:#22d3ee;    /* cyan-400 */
+    --accent-2:#f59e0b;  /* amber-500 */
+    --ok:#34d399;        /* emerald-400 */
+    --bad:#f87171;       /* red-400 */
+    --round:8px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", "Pretendard", "Noto Sans KR", sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.65; font-size:15px;
+  }
+  a{color:var(--accent); text-decoration:none}
+  a:hover{text-decoration:underline}
+  header.site{
+    padding:28px 20px 18px; max-width:1080px; margin:0 auto;
+    border-bottom:1px solid var(--line);
+  }
+  header.site .eyebrow{color:var(--accent); letter-spacing:.12em; font-size:12px; font-weight:700; text-transform:uppercase}
+  header.site h1{margin:6px 0 4px; font-size:28px; line-height:1.25}
+  header.site .sub{color:var(--muted); font-size:14px}
+  header.site .meta{margin-top:10px; color:var(--muted); font-size:13px}
+  header.site .meta b{color:var(--ink)}
+
+  nav.toc{
+    position:sticky; top:0; z-index:5; background:rgba(15,23,42,.92);
+    backdrop-filter:saturate(1.2) blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .inner{max-width:1080px; margin:0 auto; padding:10px 20px; display:flex; flex-wrap:wrap; gap:6px}
+  nav.toc a{
+    font-size:13px; color:var(--ink); padding:6px 10px; border-radius:999px;
+    border:1px solid var(--line); background:var(--panel);
+  }
+  nav.toc a:hover{border-color:var(--accent); color:var(--accent); text-decoration:none}
+
+  main{max-width:1080px; margin:0 auto; padding:28px 20px 80px}
+  section{margin:36px 0; scroll-margin-top:72px}
+  section > h2{
+    font-size:20px; margin:0 0 6px; display:flex; align-items:center; gap:10px;
+  }
+  section > h2 .tag{
+    display:inline-block; font-size:11px; padding:3px 8px; border-radius:999px;
+    background:var(--panel-2); color:var(--accent); border:1px solid var(--line);
+    font-weight:700; letter-spacing:.05em;
+  }
+  section > .lead{color:var(--muted); margin:0 0 16px}
+
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--round);
+    padding:18px 20px; margin:14px 0;
+  }
+  .grid{display:grid; gap:14px}
+  .grid.cols-2{grid-template-columns:1fr 1fr}
+  .grid.cols-3{grid-template-columns:1fr 1fr 1fr}
+  @media (max-width:760px){ .grid.cols-2,.grid.cols-3{grid-template-columns:1fr} }
+
+  h3{font-size:16px; margin:8px 0 10px}
+  h4{font-size:14px; margin:6px 0 8px; color:var(--accent)}
+
+  table{width:100%; border-collapse:collapse; margin:6px 0; font-size:14px}
+  table th, table td{border:1px solid var(--line); padding:8px 10px; vertical-align:top; text-align:left}
+  table th{background:var(--panel-2); color:var(--ink); font-weight:600}
+  table tbody tr:nth-child(odd){background:rgba(255,255,255,.02)}
+
+  ul{margin:6px 0 6px 18px}
+  li{margin:3px 0}
+  .muted{color:var(--muted)}
+  .kbd{font-family:ui-monospace,Menlo,Consolas,monospace; background:var(--panel-2); border:1px solid var(--line); padding:1px 6px; border-radius:4px; font-size:12px}
+
+  /* Prompt block */
+  .prompt{
+    position:relative; background:#0b1220; border:1px solid var(--line);
+    border-radius:var(--round); padding:14px 16px 14px 14px; margin:10px 0;
+  }
+  .prompt .head{
+    display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px;
+  }
+  .prompt .head .title{font-weight:700; font-size:14px}
+  .prompt .head .title .badge{
+    display:inline-block; background:var(--accent); color:#0b1220; font-weight:700; font-size:11px;
+    padding:2px 8px; border-radius:999px; margin-right:8px; letter-spacing:.04em;
+  }
+  .prompt pre{
+    margin:0; white-space:pre-wrap; word-break:break-word;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "D2Coding", monospace;
+    font-size:13.5px; line-height:1.6; color:#e5e7eb;
+  }
+  .btn{
+    border:1px solid var(--line); background:var(--panel-2); color:var(--ink);
+    padding:6px 10px; border-radius:6px; font-size:12px; cursor:pointer;
+    transition:all .15s ease;
+  }
+  .btn:hover{border-color:var(--accent); color:var(--accent)}
+  .btn.copied{background:var(--ok); border-color:var(--ok); color:#0b1220; font-weight:700}
+
+  .note{
+    background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.3); color:#fde68a;
+    padding:10px 14px; border-radius:var(--round); font-size:13px; margin:10px 0;
+  }
+  .ok{
+    background:rgba(52,211,153,.08); border:1px solid rgba(52,211,153,.3); color:#6ee7b7;
+    padding:10px 14px; border-radius:var(--round); font-size:13px; margin:10px 0;
+  }
+  .warn{
+    background:rgba(248,113,113,.08); border:1px solid rgba(248,113,113,.3); color:#fca5a5;
+    padding:10px 14px; border-radius:var(--round); font-size:13px; margin:10px 0;
+  }
+
+  .step-list{counter-reset:step; list-style:none; padding:0; margin:0}
+  .step-list li{
+    counter-increment:step; position:relative; padding:10px 10px 10px 44px; margin:6px 0;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:var(--round);
+  }
+  .step-list li::before{
+    content:counter(step); position:absolute; left:10px; top:10px;
+    width:24px; height:24px; border-radius:50%; background:var(--accent); color:#0b1220;
+    font-weight:700; display:flex; align-items:center; justify-content:center; font-size:12px;
+  }
+
+  .socdr{
+    display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin:10px 0 4px;
+  }
+  .socdr .cell{
+    padding:10px; background:var(--panel-2); border:1px solid var(--line); border-radius:var(--round);
+  }
+  .socdr .cell b{display:block; color:var(--accent); font-size:18px; margin-bottom:4px}
+  .socdr .cell span{font-size:12px; color:var(--muted); display:block}
+  @media (max-width:760px){ .socdr{grid-template-columns:repeat(2,1fr)} }
+
+  footer{
+    max-width:1080px; margin:40px auto 60px; padding:20px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:13px;
+  }
+  footer a{color:var(--muted)}
+
+  .eyes{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:10px 0}
+  @media (max-width:760px){ .eyes{grid-template-columns:1fr 1fr} }
+  .eye{background:var(--panel-2); border:1px solid var(--line); padding:12px; border-radius:var(--round)}
+  .eye b{display:block; color:var(--accent); margin-bottom:4px}
+  .eye span{color:var(--muted); font-size:12px; display:block}
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    background:var(--ok); color:#0b1220; padding:10px 18px; border-radius:999px;
+    font-weight:700; font-size:13px; opacity:0; pointer-events:none;
+    transition:opacity .2s ease;
+    z-index:999;
+  }
+  .toast.show{opacity:1}
+
+  .hint{font-size:12px; color:var(--muted)}
+  hr.soft{border:none; border-top:1px dashed var(--line); margin:16px 0}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="eyebrow">FEMS · 2026 마케팅관리사 자격과정 · 8주차</div>
+  <h1>마케팅, 이제는 데이터로 이야기하라</h1>
+  <div class="sub">데이터 분석 × 판단의 구조화(S-O-C-D-R) × AI 협업</div>
+  <div class="meta">
+    강사 <b>백승훈</b> (SeungHoon Baik) · <a href="mailto:data_analytics@naver.com">data_analytics@naver.com</a> ·
+    <a href="https://blog.naver.com/data_analytics" target="_blank" rel="noopener">blog.naver.com/data_analytics</a>
+    · 강의일 2026-04-16
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="inner">
+    <a href="#overview">개요</a>
+    <a href="#socdr">S-O-C-D-R</a>
+    <a href="#tools">도구 정리</a>
+    <a href="#practice-a">실습 A</a>
+    <a href="#rounds">6가지 눈 개관</a>
+    <a href="#r1">R1 기술통계</a>
+    <a href="#r2">R2 교차분석</a>
+    <a href="#r3">R3 상관·회귀</a>
+    <a href="#r4">R4 시계열·민감도</a>
+    <a href="#card">해석카드</a>
+    <a href="#ab">A/B 테스트</a>
+    <a href="#errors">AI 오류 5유형</a>
+    <a href="#capstone">캡스톤</a>
+    <a href="#exam">시험 대비</a>
+  </div>
+</nav>
+
+<main>
+
+<section id="overview">
+  <h2><span class="tag">OPEN</span> 오늘을 관통하는 한 문장</h2>
+  <div class="card">
+    <p style="font-size:18px; margin:0; line-height:1.7">
+      “데이터를 보는 눈은 <b>보이는 것을 읽는 눈</b>이 아니라,<br/>
+      <b>보이지 않는 것을 의식하는 눈</b>이다.”
+    </p>
+  </div>
+
+  <h3>하루 흐름 (3막)</h3>
+  <table>
+    <thead><tr><th>막</th><th>시간</th><th>주제</th><th>산출물</th></tr></thead>
+    <tbody>
+      <tr><td>1막</td><td>10:00–10:50</td><td>데이터 없는 마케팅이 멈추는 지점</td><td>S-O-C-D-R 개념 이해</td></tr>
+      <tr><td>실습 A</td><td>11:00–11:50</td><td>내 이슈를 데이터 질문으로</td><td>S 문장 + 캡스톤 판단메모 초안</td></tr>
+      <tr><td>2막</td><td>13:00–15:00</td><td>6가지 눈, AI로 체험</td><td>해석카드 4장 (R1~R4)</td></tr>
+      <tr><td>3막</td><td>15:00–15:20</td><td>AI가 그럴듯하게 틀리는 순간</td><td>오류 5유형 식별</td></tr>
+      <tr><td>캡스톤</td><td>15:20–16:25</td><td>내 기획안을 데이터로 증강</td><td>S-O-C-D-R 판단메모 + 발표</td></tr>
+      <tr><td>클로징</td><td>16:25–16:50</td><td>핵심 개념 총정리</td><td>시험 대비 체크</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="socdr">
+  <h2><span class="tag">프레임</span> S-O-C-D-R — 판단을 구조화하는 언어</h2>
+  <p class="lead">판단의 <b>절차</b>가 아니라, 내 판단에서 <b>무엇이 빠졌는지</b>를 확인하는 언어입니다.</p>
+  <div class="socdr">
+    <div class="cell"><b>S</b>Situation<span>왜 이 판단이 필요한가</span></div>
+    <div class="cell"><b>O</b>Options<span>어떤 대안을 검토하고 뭘 왜 버렸나</span></div>
+    <div class="cell"><b>C</b>Criteria<span>무슨 기준으로 판단했나</span></div>
+    <div class="cell"><b>D</b>Decision<span>무엇을 선택했고 재검토 조건은</span></div>
+    <div class="cell"><b>R</b>Reflection<span>결과가 나온 뒤 뭘 확인할 것인가</span></div>
+  </div>
+
+  <h3>S-O-C-D-R × 데이터 분석 매핑</h3>
+  <table>
+    <thead><tr><th>S-O-C-D-R</th><th>마케팅 판단</th><th>데이터 분석의 역할</th><th>데이터가 보지 못하는 것</th></tr></thead>
+    <tbody>
+      <tr><td>S 상황</td><td>왜 이 판단이 필요한가</td><td>기술통계·시각화로 현황 진단</td><td>왜 ‘지금’ 문제인지의 맥락</td></tr>
+      <tr><td>O 선택지</td><td>어떤 전략 대안이 있는가</td><td>교차분석으로 기회/위험 발견</td><td>조직 실행 가능성, 정치적 제약</td></tr>
+      <tr><td>C 기준</td><td>무엇을 기준으로 판단하는가</td><td>상관·회귀로 영향 변수 순위화</td><td>정량으로 안 잡히는 가치 판단</td></tr>
+      <tr><td>D 결론</td><td>어떤 전략을 선택하는가</td><td>시계열·민감도로 시나리오 비교</td><td>과거 ≠ 미래 보장 없음</td></tr>
+      <tr><td>실험</td><td>맞는지 확인하려면</td><td>A/B 테스트 설계</td><td>실험 전까지는 가설</td></tr>
+      <tr><td>R 복기</td><td>실행 후 돌아보기</td><td>KPI 추적, 예측 vs 실적</td><td>왜 그런 결과인지 해석</td></tr>
+    </tbody>
+  </table>
+  <p class="hint">★ 네 번째 열(‘데이터가 보지 못하는 것’)이 오늘 하루 종일의 참조 카드입니다.</p>
+
+  <h3>AI 시대, 역할이 바뀌었다</h3>
+  <table>
+    <thead><tr><th>영역</th><th>누가 하는가</th></tr></thead>
+    <tbody>
+      <tr><td>기획 상황 정의</td><td>사람 ●</td></tr>
+      <tr><td>핵심 질문 도출</td><td>사람 ● + AI 보조</td></tr>
+      <tr><td>분석 방법 선택</td><td>사람 ● + AI 제안</td></tr>
+      <tr><td>분석 실행</td><td>AI ●</td></tr>
+      <tr><td>결과 검증</td><td>사람 ● (Excel 교차확인)</td></tr>
+      <tr><td>해석과 판단</td><td>사람 ●</td></tr>
+      <tr><td>보이지 않는 것 의식</td><td>사람 ● (AI 대체 불가)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="tools">
+  <h2><span class="tag">시험</span> 도구 개념 정리 (Power Query / Pivot / BI)</h2>
+  <p class="lead">직접 실습은 안 하지만 시험에 나옵니다.</p>
+  <table>
+    <thead><tr><th>도구</th><th>핵심 기능</th></tr></thead>
+    <tbody>
+      <tr><td>Power Query</td><td>데이터 전처리 자동화 · GUI 기반 반복 가능한 ETL</td></tr>
+      <tr><td>Power Pivot</td><td>DAX 기반 사용자 지표 · Multi-table 관계 정의</td></tr>
+      <tr><td>Power BI</td><td>인터랙티브 대시보드 · 실시간 보고서 공유</td></tr>
+    </tbody>
+  </table>
+  <div class="note">
+    기출: (2025.08) Power Query 장점 → <b>GUI 기반 반복 가능한 데이터 전처리 자동화</b> ·
+    (2025.08) Power Pivot 기능 → <b>테이블 간 관계 정의 + DAX 기반 사용자 지표</b> ·
+    (2025.12) Power BI 기본 뷰가 <b>아닌</b> 것 → <b>쿼리 보기(Query view)</b>
+  </div>
+</section>
+
+<section id="practice-a">
+  <h2><span class="tag">실습 A</span> 내 이슈를 데이터의 언어로 바꾸기 (11:00–11:50)</h2>
+  <p class="lead">강사가 이슈를 주지 않습니다. 데이터를 보고 스스로 발견합니다.</p>
+
+  <h3>데이터셋 개요</h3>
+  <table>
+    <thead><tr><th>항목</th><th>값</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>기간</td><td>2022.01 ~ 2024.12 (36개월)</td><td>가상 시나리오 · 과자류 사업부</td></tr>
+      <tr><td>거래</td><td>817건</td><td>거래 건별 raw data</td></tr>
+      <tr><td>매출</td><td>77.6억 (천원 단위)</td><td></td></tr>
+      <tr><td>제품군</td><td>5종</td><td>캔디·쿠키·젤리·스낵·초콜릿</td></tr>
+    </tbody>
+  </table>
+
+  <h3>실습 A — 5단계 흐름</h3>
+  <ol class="step-list">
+    <li><b>데이터 읽기</b> · 요약시트 탐색 · <span class="muted">10분</span></li>
+    <li><b>이슈 발표</b> · 전원 2분씩 · <span class="muted">10분</span></li>
+    <li><b>레드팀</b> · 스스로 공격 · <span class="muted">10분</span></li>
+    <li><b>재종합</b> · 살아남은 판단 · <span class="muted">10분</span></li>
+    <li><b>최종 발표</b> · 뭐가 바뀌었나 · <span class="muted">10분</span></li>
+  </ol>
+
+  <h3>STEP 1 · 데이터 읽기 3문항</h3>
+  <div class="card">
+    <b>Q1.</b> 이 데이터에서 “이건 그냥 넘기면 안 된다”고 느끼는 숫자나 패턴이 있습니까? <span class="muted">(숫자+이유 1줄)</span><br/>
+    <b>Q2.</b> 데이터가 보여주는 것 중 예상과 가장 달랐던 것은 무엇입니까? <span class="muted">(왜 달랐는지)</span><br/>
+    <b>Q3.</b> 이 패턴이 계속된다면 6개월 뒤 어떤 일이 벌어질까요? <span class="muted">(긍정·부정 모두)</span>
+    <hr class="soft"/>
+    <div>→ <b>S 문장</b> 완성: <span class="kbd">“______은 ______이다. 왜냐하면 __%이기 때문이다.”</span></div>
+  </div>
+
+  <h3>STEP 3 · 레드팀 — 내 판단을 스스로 공격</h3>
+  <div class="grid cols-3">
+    <div class="card">
+      <h4>공격 1 · 이 패턴이 이슈가 아닐 수 있다</h4>
+      <span class="muted">계절 요인 아닐까? 샘플 수가 너무 적진 않나? 외부 충격(일회성) 아닐까?</span>
+    </div>
+    <div class="card">
+      <h4>공격 2 · 경영진의 반박</h4>
+      <span class="muted">“그래서 뭘 어쩌라고?”에 데이터만으로 답할 수 없는 부분. 비용/실행주체/경쟁사 반응?</span>
+    </div>
+    <div class="card">
+      <h4>공격 3 · 틀리는 시나리오</h4>
+      <span class="muted">“만약 ______라면, 내 판단은 틀린 것이다.” 6개월 뒤 틀렸다고 밝혀지는 상황.</span>
+    </div>
+  </div>
+  <div class="ok">공격이 잘 안 되면 → 판단이 탄탄. 공격이 너무 잘 되면 → S를 수정해야 합니다.</div>
+</section>
+
+<section id="rounds">
+  <h2><span class="tag">2막</span> 6가지 눈 — S-O-C-D-R을 데이터로 채우기</h2>
+  <p class="lead">각 눈이 S-O-C-D-R의 어느 칸을 채우는지 확인합니다.</p>
+  <div class="eyes">
+    <div class="eye"><b>1. 기술통계</b><span>무슨 일이 일어났나? · R1 → S</span></div>
+    <div class="eye"><b>2. 시각화</b><span>패턴이 보이는가? · R1 → S</span></div>
+    <div class="eye"><b>3. 교차분석</b><span>누가, 어디서 다른가? · R2 → O</span></div>
+    <div class="eye"><b>4. 상관·회귀</b><span>얼마나 영향을 주는가? · R3 → C</span></div>
+    <div class="eye"><b>5. 시계열·민감도</b><span>앞으로 어떻게 될까? · R4 → D</span></div>
+    <div class="eye"><b>6. 오류 검증</b><span>AI가 틀리는 순간은? · 4막 → R</span></div>
+  </div>
+
+  <h3>매 라운드 공통 구조 (15~25분)</h3>
+  <ol class="step-list">
+    <li><b>개념</b> · 이 분석은 이런 질문에 답한다 · <span class="muted">2~3분</span></li>
+    <li><b>내 예측</b> · AI에게 시키기 전에 내가 먼저 적는다 · <span class="muted">2~3분</span></li>
+    <li><b>AI 실행</b> · 복붙 프롬프트로 요청 · <span class="muted">3~8분</span></li>
+    <li><b>비교 + 해석카드</b> · 내 예측 vs AI 결과 · <span class="muted">4~8분</span></li>
+    <li><b>보이지 않는 것</b> · 한계 + S-O-C-D-R 연결 · <span class="muted">2~3분</span></li>
+  </ol>
+</section>
+
+<!-- R1 -->
+<section id="r1">
+  <h2><span class="tag">R1</span> 기술통계 + 시각화 — S(현황)를 데이터로</h2>
+  <p class="lead">“우리 매출은 어떤 상태인가?” · 평균·표준편차·CV, 세 숫자가 현황을 말한다.</p>
+
+  <div class="card">
+    <h3>① 내 예측 (AI 보기 전)</h3>
+    <ul>
+      <li><b>Q1.</b> 매출이 가장 높은 달은 몇 월일 것 같습니까?</li>
+      <li><b>Q2.</b> 어느 제품이 가장 많이 팔릴 것 같습니까?</li>
+      <li><b>Q3.</b> 매출 변동이 클까요, 안정적일까요?</li>
+    </ul>
+    <div class="hint">📊 데이터 복사: 실습 데이터셋.xlsx → [📊 원본데이터] 시트 → <span class="kbd">매출금액 열(N)</span> 전체 선택 → 복사</div>
+  </div>
+
+  <div class="prompt">
+    <div class="head">
+      <div class="title"><span class="badge">R1</span>Claude 프롬프트 (상세 · 권장)</div>
+      <button class="btn" data-copy="p-r1-full">복사</button>
+    </div>
+<pre id="p-r1-full">나는 과자류 마케팅 담당자입니다.
+아래는 2022~2024년 거래 데이터(817건)입니다.
+[데이터 붙여넣기]
+
+① 매출금액의 기술통계(평균·중앙값·표준편차·최대·최소)를 요약해줘.
+② 월별 매출 추이에서 특이한 패턴을 알려줘.
+③ 마케팅 담당자가 바로 쓸 수 있는 인사이트 2가지를 줘.</pre>
+  </div>
+
+  <div class="prompt">
+    <div class="head">
+      <div class="title"><span class="badge">R1</span>짧은 버전 (요약 프롬프트)</div>
+      <button class="btn" data-copy="p-r1-short">복사</button>
+    </div>
+<pre id="p-r1-short">나는 과자류 사업부 마케팅 담당자입니다.
+[데이터 붙여넣기]
+이 데이터의 기술통계(평균, 표준편차, 최대, 최소)를 요약하고,
+월별 매출 추이를 시각화해주세요.
+특이한 패턴이 있으면 알려주세요.</pre>
+  </div>
+
+  <div class="ok">✅ Excel 검증: 원본데이터 → 삽입 → 피벗테이블 → 행: 월, 값: 매출금액 합계 → AI 수치와 비교</div>
+</section>
+
+<!-- R2 -->
+<section id="r2">
+  <h2><span class="tag">R2</span> 교차분석 — O(선택지)를 데이터에서 발견</h2>
+  <p class="lead">“누가, 어디서, 왜 다른가?” · 전체 평균에 숨은 차이를 드러낸다.</p>
+
+  <div class="card">
+    <h3>① 내 예측</h3>
+    <ul>
+      <li><b>Q1.</b> 매출을 주도하는 연령대는? (20/30/40/50대)</li>
+      <li><b>Q2.</b> 온라인·오프라인·홈쇼핑 中 매출 1위 채널은?</li>
+      <li><b>Q3.</b> 남성·여성 중 초콜릿을 더 많이 사는 쪽은?</li>
+    </ul>
+    <div class="hint">📊 데이터 복사: [📊 원본데이터] 시트 → 전체(A~N열) 선택 → 복사</div>
+  </div>
+
+  <div class="prompt">
+    <div class="head">
+      <div class="title"><span class="badge">R2</span>Claude 프롬프트 (상세 · 권장)</div>
+      <button class="btn" data-copy="p-r2-full">복사</button>
+    </div>
+<pre id="p-r2-full">나는 과자류 마케팅 담당자입니다.
+컬럼: 고객연령대·성별·판매채널·제품군·매출금액(천원)
+[데이터 붙여넣기]
+
+① 고객연령대 × 판매채널 교차표(매출합계)를 만들어줘.
+② 고객연령대 × 제품군 교차표(매출합계)를 만들어줘.
+③ 전체 평균보다 '눈에 띄는 세그먼트' 2개를 찾아 마케팅 시사점을 줘.</pre>
+  </div>
+
+  <div class="prompt">
+    <div class="head">
+      <div class="title"><span class="badge">R2</span>짧은 버전</div>
+      <button class="btn" data-copy="p-r2-short">복사</button>
+    </div>
+<pre id="p-r2-short">고객 연령대별 × 제품군별 매출 교차표를 만들어주세요.
+연령대별 × 판매채널별 교차표도 함께.
+전체에서는 안 보이지만 세그먼트별로는 보이는 패턴이 있으면 알려주세요.</pre>
+  </div>
+
+  <div class="ok">✅ Excel 검증: 삽입 → 피벗테이블 → 행: 고객연령대, 열: 제품군, 값: 매출합계 → AI 교차표와 숫자 비교</div>
+</section>
+
+<!-- R3 -->
+<section id="r3">
+  <h2><span class="tag">R3</span> 상관 + 회귀분석 — C(기준)를 데이터로 세운다</h2>
+  <p class="lead">“얼마나 영향을 주는가?” · 상관 ≠ 인과, 회귀 = 영향의 크기.</p>
+
+  <div class="card">
+    <h3>① 내 예측</h3>
+    <ul>
+      <li><b>Q1.</b> 매출에 가장 큰 영향 변수는? (할인율/수량/단가)</li>
+      <li><b>Q2.</b> 할인율이 높으면 매출이 높아질까, 낮아질까?</li>
+      <li><b>Q3.</b> R²(설명력)은 얼마나 될까요? (0~1로 예측)</li>
+    </ul>
+    <div class="hint">📊 실행 방법: [데이터] → [데이터 분석] → [상관관계] · 입력: J(수량)·K(단가)·L(할인율)·M(프로모션여부)·N(매출)</div>
+  </div>
+
+  <div class="prompt">
+    <div class="head">
+      <div class="title"><span class="badge">R3</span>Claude 프롬프트 (상세 · 권장)</div>
+      <button class="btn" data-copy="p-r3-full">복사</button>
+    </div>
+<pre id="p-r3-full">나는 과자류 마케팅 담당자입니다.
+컬럼: 수량·단가(천원)·할인율·프로모션여부·매출금액(천원)
+[데이터 붙여넣기]
+
+① 매출금액과 할인율·수량의 상관계수를 구해줘.
+② 매출금액 ~ 할인율 + 수량 회귀결과를 R²·β·p값으로 정리해줘.
+③ '무슨 관계? / 얼마나? / 그래서 뭘?' 3문장으로
+   마케팅 언어로 번역해줘.</pre>
+  </div>
+
+  <div class="prompt">
+    <div class="head">
+      <div class="title"><span class="badge">R3</span>짧은 버전</div>
+      <button class="btn" data-copy="p-r3-short">복사</button>
+    </div>
+<pre id="p-r3-short">매출과 할인율, 수량, 단가의 상관관계를 분석해주세요.
+회귀분석으로 '변수 X가 1단위 증가하면 매출이 얼마 변한다' 형식으로 알려주세요.
+마케팅 담당자가 바로 전략에 쓸 수 있는 언어로 설명해주세요.</pre>
+  </div>
+
+  <table>
+    <thead><tr><th>지표</th><th>해석 기준</th></tr></thead>
+    <tbody>
+      <tr><td>R² (결정계수)</td><td>0.7 이상이면 양호 · 독립변수가 종속변수 변동의 %를 설명</td></tr>
+      <tr><td>β (계수)</td><td>부호와 크기 확인 · 1단위 변화 시 매출 변화량</td></tr>
+      <tr><td>p값 (유의확률)</td><td>0.05 미만이면 통계적으로 유의</td></tr>
+      <tr><td>상관계수 r</td><td>-1~+1 · |r|&gt;0.7 강함 · |r|&lt;0.3은 약한 상관</td></tr>
+    </tbody>
+  </table>
+
+  <div class="warn">⚠️ r=0.3 미만은 ‘약한’ 상관입니다. AI가 ‘유의미’라 해도 반드시 <b>크기</b>를 확인하세요.</div>
+</section>
+
+<!-- R4 -->
+<section id="r4">
+  <h2><span class="tag">R4</span> 시계열 + 민감도 — D(결론)를 시나리오로 비교</h2>
+  <p class="lead">“앞으로 어떻게 될까?” · 추세 + 계절성 + 잔차 = 시계열의 세 요소.</p>
+
+  <div class="card">
+    <h3>① 내 예측</h3>
+    <ul>
+      <li><b>Q1.</b> 매출 성수기는 몇 월일 것 같습니까?</li>
+      <li><b>Q2.</b> 2022→2024 성장률은 10%? 20%? 30%?</li>
+      <li><b>Q3.</b> 할인율 5%p 줄이면 매출이 올라갈까, 내려갈까?</li>
+    </ul>
+    <div class="hint">📊 데이터: 실습 데이터셋.xlsx → [R4_시계열] 시트 → C(연월)·D(매출합계) 선택 → 꺾은선 차트</div>
+  </div>
+
+  <div class="prompt">
+    <div class="head">
+      <div class="title"><span class="badge">R4</span>Claude 프롬프트 (상세 · 권장)</div>
+      <button class="btn" data-copy="p-r4-full">복사</button>
+    </div>
+<pre id="p-r4-full">아래는 2022~2024년 36개월 월별 매출 데이터입니다.
+[데이터 붙여넣기: R4_시계열 시트 C~G열]
+
+① 계절성 패턴을 찾아줘. 매년 반복되는 성수기·비수기는?
+② 전체 트렌드(성장/정체/감소)를 한 문장으로.
+③ 할인율 -5%p / 현행 / +5%p 시나리오별
+   예상 매출 변화를 표로 만들어줘.</pre>
+  </div>
+
+  <div class="prompt">
+    <div class="head">
+      <div class="title"><span class="badge">R4</span>짧은 버전</div>
+      <button class="btn" data-copy="p-r4-short">복사</button>
+    </div>
+<pre id="p-r4-short">월별 매출로 향후 6개월 예측해줘.
+계절성이 있는지 분석하고,
+할인율 -5%p / 현행유지 / +5%p 세 가지 시나리오로
+매출 변화를 표로 만들어줘.</pre>
+  </div>
+
+  <h3>민감도 시나리오 표 (회귀 β × 최근 3개월 평균 기반 추정)</h3>
+  <table>
+    <thead><tr><th>할인율 변화</th><th>추정 매출(천원)</th><th>마진 영향</th><th>판단</th></tr></thead>
+    <tbody>
+      <tr><td>-10%p</td><td>(학생 계산)</td><td>마진 10%↑</td><td>매출↓, 이익?</td></tr>
+      <tr><td>-5%p</td><td>(학생 계산)</td><td>마진 5%↑</td><td>검토 가치 있음</td></tr>
+      <tr><td>0% (현행)</td><td>249,142</td><td>—</td><td>현행 유지</td></tr>
+      <tr><td>+5%p</td><td>(학생 계산)</td><td>마진 5%↓</td><td>매출↑, 마진↓?</td></tr>
+      <tr><td>+10%p</td><td>(학생 계산)</td><td>마진 10%↓</td><td>매출 급감 위험</td></tr>
+    </tbody>
+  </table>
+  <div class="note">계산식: 추정매출 = 최근3개월 평균매출 × (1 + β<sub>할인율</sub> × 할인율변화%p)</div>
+  <div class="ok">✅ Excel 검증: R4_시계열 시트 H열 이동평균 수식 <span class="kbd">=AVERAGE(D5:D7)</span> 입력 후 드래그 → 차트에 추가</div>
+</section>
+
+<!-- Interpretation card -->
+<section id="card">
+  <h2><span class="tag">공통</span> 해석 카드 — 매 라운드 결론 정리</h2>
+  <p class="lead">총 4장(R1~R4) = 캡스톤의 재료. <b>네 번째 행(보이지 않는 것)이 핵심.</b></p>
+  <table>
+    <thead><tr><th>항목</th><th>쓰는 것</th></tr></thead>
+    <tbody>
+      <tr><td>데이터가 말해주는 것</td><td>AI 결과를 한 문장으로</td></tr>
+      <tr><td>마케팅에서 의미하는 것</td><td>내 사업/제품/고객 맥락에서의 해석</td></tr>
+      <tr><td>내가 할 수 있는 것</td><td>구체적 액션 하나</td></tr>
+      <tr><td>이 분석이 보지 못하는 것</td><td>한계 한 줄</td></tr>
+      <tr><td>S-O-C-D-R 중 어디에 쓰이나</td><td>예: “C(기준)을 세우는 데 쓴다”</td></tr>
+    </tbody>
+  </table>
+
+  <h3>예시 (R1 기준)</h3>
+  <div class="card">
+    <b>데이터가 말해주는 것</b> — 월평균 매출 215,426천원, CV 33%로 변동이 크다. 12월이 최고(928,450), 2월이 최저(451,950).<br/>
+    <b>마케팅에서 의미하는 것</b> — 매출이 계절에 크게 흔들린다. 비수기(1~2월) 매출 방어 전략이 필요.<br/>
+    <b>내가 할 수 있는 것</b> — 1~2월 비수기 한정 프로모션 설계 / 비수기에 강한 제품군(젤리?) 밀어주기.<br/>
+    <b>보지 못하는 것</b> — 왜 12월이 높은지(연말 선물? 성과급?) 원인 모름. 경쟁사도 같은 패턴인지 모름.<br/>
+    <b>S-O-C-D-R</b> — S(현황)를 데이터로 확인. “우리 매출은 계절 변동이 크고, 비수기 대응이 과제다.”
+  </div>
+</section>
+
+<!-- A/B -->
+<section id="ab">
+  <h2><span class="tag">브릿지</span> A/B 테스트 — 상관에서 인과로</h2>
+  <p class="lead">같은 조건에서 <b>한 가지만</b> 바꿔서 비교한다. A(기존) vs B(변경) → 차이가 우연인지 진짜인지 판단.</p>
+  <div class="card">
+    회귀분석: “관계가 있을 것 같다” → A/B 테스트: “진짜 그런지 확인했다”<br/>
+    S-O-C-D-R에서의 위치: <b>D(결론)와 R(복기) 사이</b>. “이 전략이 맞는지 확인하려면 A/B 테스트를 설계해야 한다.”
+  </div>
+</section>
+
+<!-- Errors -->
+<section id="errors">
+  <h2><span class="tag">3막</span> AI가 그럴듯하게 틀리는 5가지 패턴</h2>
+  <p class="lead">정교한 분석일수록 위험이 깊이 숨는다. 숫자만 보지 말고 <b>해석과 결론</b>도 보세요.</p>
+  <table>
+    <thead><tr><th>#</th><th>유형</th><th>AI의 실수 예시</th></tr></thead>
+    <tbody>
+      <tr><td>#1</td><td>해석 과장</td><td>상관계수 -0.15(약한 상관)를 ‘유의미한 음의 상관’으로 서술</td></tr>
+      <tr><td>#2</td><td>인과 비약</td><td>프로모션 매출 -20%를 “저가 제품 때문”이라 단정, “중단하면 매출 상승” 비약</td></tr>
+      <tr><td>#3</td><td>가짜 출처 (환각)</td><td>「2024 과자류 시장 동향 보고서」— 실재하지 않는 자료를 자신있게 인용</td></tr>
+      <tr><td>#4</td><td>서사 환각</td><td>‘마트 쇼핑 선호’·‘자녀 간식 구매’ — 데이터에 없는 이유를 그럴듯하게 서술</td></tr>
+      <tr><td>#5</td><td>보이지 않는 것 무시</td><td>경쟁사·브랜드·마진 빠진 채 “추가 분석 없이 판단 가능” → 가장 위험</td></tr>
+    </tbody>
+  </table>
+  <div class="warn">가장 위험한 오류는 <b>숫자</b>가 아니라 <b>결론</b>에 숨습니다. 오류를 찾는 것보다 중요한 건, 왜 못 찾았는가를 아는 것.</div>
+</section>
+
+<!-- Capstone -->
+<section id="capstone">
+  <h2><span class="tag">캡스톤</span> 내 마케팅 이슈에 데이터를 입히기</h2>
+  <p class="lead">오전에 쓴 이슈 + 2막 해석카드 4장 → 합쳐서 판단 메모 완성.</p>
+
+  <h3>진행 (약 35분)</h3>
+  <ol class="step-list">
+    <li><b>이슈 확정 + 분석 설계</b> · 5분</li>
+    <li><b>AI 분석 + 결과 해석</b> · 10분</li>
+    <li><b>S-O-C-D-R 판단 메모 작성</b> · 15분</li>
+    <li><b>발표 준비</b> · 5분</li>
+  </ol>
+
+  <h3>판단 메모 양식</h3>
+  <table>
+    <thead><tr><th>S-O-C-D-R</th><th>마케팅 판단</th><th>데이터 분석 근거</th><th>데이터가 보지 못하는 것</th></tr></thead>
+    <tbody>
+      <tr><td>S 상황</td><td>이슈 한 문장</td><td>기술통계·시각화 현황</td><td>왜 ‘지금’ 문제인지</td></tr>
+      <tr><td>O 선택지</td><td>대안 + 배제 이유</td><td>교차분석 기회/위험</td><td>실행 가능성</td></tr>
+      <tr><td>C 기준</td><td>판단 기준</td><td>상관·회귀 변수 순위</td><td>정량 밖 가치</td></tr>
+      <tr><td>D 결론</td><td>전략 + 조건</td><td>시나리오 비교</td><td>과거≠미래</td></tr>
+      <tr><td>실험</td><td>확인 방법</td><td>A/B 설계 한 줄</td><td>가설일 뿐</td></tr>
+      <tr><td>R 복기</td><td>언제 뭘 확인</td><td>KPI 추적</td><td>해석은 사람</td></tr>
+      <tr><td>AI 협업</td><td colspan="3">뭘 시켰고, 뭘 반영/배제했는가</td></tr>
+    </tbody>
+  </table>
+  <div class="note">세 번째 열만 있으면 <b>분석 보고서</b>. 네 번째 열까지 있으면 <b>판단 보고서</b>.</div>
+
+  <h3>발표 구조 (3분)</h3>
+  <ul>
+    <li><b>30초</b> · S — 이슈 + 데이터 현황</li>
+    <li><b>1분</b> · O · C — 기준으로 대안 비교</li>
+    <li><b>1분</b> · D — 전략 결론 + 데이터 근거</li>
+    <li><b>30초</b> · <span style="color:var(--accent-2)">보이지 않는 것</span> + 한계 <span class="hint">(이 부분을 빼면 판단 발표가 아닙니다)</span></li>
+  </ul>
+
+  <h3>강사 질의 포인트 — 미리 준비</h3>
+  <div class="grid cols-2">
+    <div class="card">“데이터가 보지 못한 것 중에서 가장 <b>치명적</b>인 건 뭘까요?”</div>
+    <div class="card">“AI가 제안한 것 중 <b>왜 그걸 버렸나요?</b>”</div>
+    <div class="card">“이 상관관계가 내년에도 유지될까요? <b>뭐가 바뀌면 깨질까요?</b>”</div>
+    <div class="card">“경영진에게 보고 시 <b>가장 먼저 받을 반박</b>이 뭘까요?”</div>
+  </div>
+</section>
+
+<!-- Exam -->
+<section id="exam">
+  <h2><span class="tag">시험</span> 8주차 핵심 개념 총정리</h2>
+  <table>
+    <thead><tr><th>개념</th><th>핵심 한 줄</th></tr></thead>
+    <tbody>
+      <tr><td>기술통계 vs 추론통계</td><td>요약 vs 추론(가설검정·회귀)</td></tr>
+      <tr><td>상관계수 (r)</td><td>-1 ~ +1, |r|&gt;0.7 강함</td></tr>
+      <tr><td>R² (결정계수)</td><td>독립변수가 종속변수 변동의 %를 설명</td></tr>
+      <tr><td>시계열 분해</td><td>추세 + 계절성 + 잔차</td></tr>
+      <tr><td>지수평활 α</td><td>클수록 최근 데이터에 민감</td></tr>
+      <tr><td>상관 ≠ 인과</td><td>함께 움직임 ≠ 원인</td></tr>
+      <tr><td>교차분석</td><td>두 변수를 교차해 숨은 차이 발견</td></tr>
+      <tr><td>Power Query / Pivot / BI</td><td>전처리 / DAX 지표 / 대시보드</td></tr>
+      <tr><td>파레토 차트</td><td>막대 + 누적비율선으로 기여도</td></tr>
+      <tr><td>A/B 테스트</td><td>한 가지만 바꿔 인과 확인</td></tr>
+    </tbody>
+  </table>
+
+  <h3>오늘을 관통한 한 문장</h3>
+  <div class="card">
+    <p style="margin:0">
+      “데이터로 확인한 것만이 전부가 아닙니다.<br/>
+      보지 못한 변수, 담지 못한 맥락, 데이터에 없는 고객의 마음 — 이것들이 여전히 남아 있습니다.”<br/><br/>
+      <b>데이터를 보는 눈은 보이는 것을 읽는 눈이 아니라, 보이지 않는 것을 의식하는 눈입니다.</b>
+    </p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  백승훈 · <a href="mailto:data_analytics@naver.com">data_analytics@naver.com</a> ·
+  <a href="https://blog.naver.com/data_analytics" target="_blank" rel="noopener">blog.naver.com/data_analytics</a><br/>
+  FEMS 2026.04 · 마케팅관리사 자격과정 8주차 · 본 페이지는 강의 복습용 참고 자료입니다.
+</footer>
+
+<div class="toast" id="toast">복사되었습니다 ✓</div>
+
+<script>
+(function(){
+  const toast = document.getElementById('toast');
+  function showToast(msg){
+    toast.textContent = msg || '복사되었습니다 ✓';
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=>toast.classList.remove('show'), 1400);
+  }
+  document.querySelectorAll('button.btn[data-copy]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const id = btn.getAttribute('data-copy');
+      const el = document.getElementById(id);
+      if(!el) return;
+      const text = el.innerText;
+      try{
+        await navigator.clipboard.writeText(text);
+      }catch(e){
+        // Fallback
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy'); ta.remove();
+      }
+      const old = btn.textContent;
+      btn.textContent = '✓ 복사됨';
+      btn.classList.add('copied');
+      showToast();
+      setTimeout(()=>{ btn.textContent = old; btn.classList.remove('copied'); }, 1400);
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
