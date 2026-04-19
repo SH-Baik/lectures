@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>실습 프롬프트 — 생산·품질 데이터, GPT로 보고서가 되다</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --navy:   #1B3A6B;
+  --amber:  #D4820A;
+  --teal:   #0F6B4F;
+  --brown:  #6B3A1B;
+  --purple: #4F0F6B;
+  --red:    #B91C1C;
+  --blue:   #1D4ED8;
+  --bg:     #F5F4F0;
+  --surface:#FFFFFF;
+  --text:   #1C1C1E;
+  --muted:  #6B7280;
+  --border: #E2E0DB;
+  --navy-l: #EEF3FB;
+  --amber-l:#FEF3E2;
+  --teal-l: #E8F5EF;
+  --red-l:  #FEF2F2;
+  --blue-l: #EFF6FF;
+  --code:   #1E293B;
+  --step1:  #1B3A6B;
+  --step2:  #2563A8;
+  --step3:  #3B82C4;
+  --step4:  #D4820A;
+  --step5:  #B86B0A;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* ── STICKY HEADER ── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: var(--navy);
+  border-bottom: 3px solid var(--amber);
+  padding: 0 1.5rem;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.header-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #CADCFC;
+  white-space: nowrap;
+}
+.header-title span { color: var(--amber); }
+
+/* ── ROLE TABS ── */
+.role-tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+.role-tab {
+  padding: 0.3rem 0.85rem;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  color: #CADCFC;
+  transition: all 0.2s;
+  background: transparent;
+}
+.role-tab:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.role-tab.active { background: var(--amber); color: #fff; border-color: var(--amber); }
+.role-tab.active.indiv { background: var(--step3); border-color: var(--step3); }
+.role-tab.active.lead  { background: var(--amber); border-color: var(--amber); }
+
+/* ── PROCESS BANNER ── */
+.process-banner {
+  background: var(--navy);
+  padding: 0.9rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.process-banner .label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94A3B8;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-right: 0.3rem;
+}
+.step-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0.18rem 0.7rem;
+  border-radius: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.step-pill.always { background: var(--teal-l); color: var(--teal); }
+.step-pill.group  { background: var(--amber-l); color: var(--amber); }
+.step-pill.arrow  { color: #475569; font-size: 12px; padding: 0; }
+.step-pill.active { outline: 2px solid currentColor; outline-offset: 1px; }
+
+/* ── LAYOUT ── */
+.layout {
+  display: flex;
+  max-width: 1280px;
+  margin: 0 auto;
+  min-height: calc(100vh - 54px - 44px);
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 230px;
+  flex-shrink: 0;
+  padding: 1.5rem 0 1.5rem 1rem;
+  position: sticky;
+  top: calc(54px + 44px);
+  height: calc(100vh - 54px - 44px);
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+}
+.sb-section { margin-bottom: 1.2rem; }
+.sb-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 0.6rem;
+  margin-bottom: 0.3rem;
+}
+.sb-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.28rem 0.6rem;
+  border-radius: 6px;
+  font-size: 12.5px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.sb-item:hover { background: var(--border); color: var(--text); }
+.sb-item.active { background: var(--navy-l); color: var(--navy); font-weight: 600; }
+.sb-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.sb-sub {
+  display: block;
+  font-size: 11.5px;
+  color: var(--muted);
+  padding: 0.2rem 0.6rem 0.2rem 1.8rem;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.sb-sub:hover { background: var(--border); color: var(--text); }
+
+/* ── MAIN ── */
+.main {
+  flex: 1;
+  padding: 2rem 2rem 4rem;
+  min-width: 0;
+}
+
+/* ── ROLE HEADER ── */
+.role-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.8rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border);
+}
+.role-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.role-title { font-size: 1.5rem; font-weight: 900; color: var(--navy); }
+.role-desc { font-size: 13px; color: var(--muted); margin-top: 0.1rem; }
+.step-tags { display: flex; gap: 0.35rem; margin-left: auto; flex-wrap: wrap; }
+.step-tag {
+  font-size: 11px; font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+}
+
+/* ── MODULE SECTION ── */
+.module-section { margin-bottom: 2.5rem; }
+.module-header {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 2px solid;
+}
+.module-badge {
+  font-size: 11px; font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  color: #fff;
+  white-space: nowrap;
+}
+.module-title { font-size: 1.05rem; font-weight: 700; }
+.module-meta { margin-left: auto; display: flex; gap: 0.35rem; }
+.tag {
+  font-size: 11px; font-weight: 600;
+  padding: 0.18rem 0.55rem;
+  border-radius: 12px;
+}
+.tag.indiv { background: var(--teal-l); color: var(--teal); }
+.tag.group { background: var(--amber-l); color: var(--amber); }
+
+/* ── CARD ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+.card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1.1rem;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.card-header:hover { background: var(--bg); }
+.step-badge {
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800;
+  color: #fff; flex-shrink: 0;
+}
+.card-title { font-size: 13.5px; font-weight: 600; flex: 1; }
+.card-tags { display: flex; gap: 0.3rem; }
+.chevron {
+  font-size: 11px; color: var(--muted);
+  transition: transform 0.2s;
+  margin-left: 0.2rem;
+}
+.card.open .chevron { transform: rotate(90deg); }
+.card-body { display: none; padding: 1.1rem; }
+.card.open .card-body { display: block; }
+
+/* ── CONTEXT / DATA / PROMPT BOXES ── */
+.ctx-box {
+  background: var(--navy-l);
+  border-left: 3px solid var(--navy);
+  border-radius: 0 6px 6px 0;
+  padding: 0.65rem 0.9rem;
+  margin-bottom: 0.9rem;
+  font-size: 12.5px;
+  color: var(--navy);
+}
+.data-box {
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  padding: 0.55rem 0.9rem;
+  margin-bottom: 0.9rem;
+  font-size: 12px;
+  color: #374151;
+}
+.data-box .dl { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.2rem; }
+.prompt-label {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted);
+  display: flex; align-items: center; gap: 0.4rem;
+  margin-bottom: 0.35rem;
+}
+.copy-btn {
+  margin-left: auto;
+  font-size: 11px; font-weight: 600;
+  color: var(--navy);
+  background: var(--navy-l);
+  border: 1px solid #CADCFC;
+  border-radius: 4px;
+  padding: 0.12rem 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: none; letter-spacing: 0;
+}
+.copy-btn:hover { background: var(--navy); color: #fff; }
+.copy-btn.done { background: var(--teal); color: #fff; border-color: var(--teal); }
+.prompt-box {
+  background: var(--code);
+  border-radius: 8px;
+  padding: 0.9rem 1.1rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #E2E8F0;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  margin-bottom: 0.9rem;
+}
+.ph { color: #94A3B8; font-style: italic; }
+.point-box {
+  background: var(--amber-l);
+  border-left: 3px solid var(--amber);
+  border-radius: 0 6px 6px 0;
+  padding: 0.65rem 0.9rem;
+  font-size: 12.5px;
+  color: #7C4A00;
+  margin-bottom: 0.75rem;
+}
+.point-box .pl { font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber); margin-bottom: 0.2rem; }
+
+/* ── STEP GUIDE BOX ── */
+.step-guide {
+  background: var(--amber-l);
+  border: 1.5px solid var(--amber);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 0.9rem;
+}
+.step-guide .sg-title { font-size: 13px; font-weight: 700; color: var(--amber); margin-bottom: 0.5rem; }
+.step-guide .sg-item { display: flex; gap: 0.6rem; font-size: 12.5px; color: #7C4A00; margin-bottom: 0.35rem; }
+.step-guide .sg-num {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--amber); color: #fff;
+  font-size: 10px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+
+/* ── CHECKLIST BOX ── */
+.checklist-box {
+  background: var(--teal-l);
+  border: 1.5px solid var(--teal);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1.2rem;
+}
+.checklist-box .cb-title { font-size: 13px; font-weight: 700; color: var(--teal); margin-bottom: 0.5rem; }
+.checklist-box .cb-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
+.checklist-box .cb-col { }
+.checklist-box .cb-step { font-size: 11px; font-weight: 800; color: var(--teal); margin-bottom: 0.3rem; }
+.checklist-box .cb-main { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+.checklist-box .cb-desc { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+.checklist-box .cb-ex { font-size: 11px; color: var(--teal); margin-top: 0.3rem; font-style: italic; }
+.checklist-box .cb-miss { font-size: 11px; color: var(--red); margin-top: 0.25rem; }
+
+/* ── COMPARE TABLE ── */
+.cmp-table { width: 100%; border-collapse: collapse; margin-bottom: 0.9rem; font-size: 12.5px; }
+.cmp-table th { padding: 0.5rem 0.7rem; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.cmp-table th.bad { background: #FEE2E2; color: #B91C1C; }
+.cmp-table th.good { background: #DCFCE7; color: #166534; }
+.cmp-table td { padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+.cmp-table tr:last-child td { border-bottom: none; }
+.cmp-table td.bad { background: #FFF5F5; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #7F1D1D; }
+.cmp-table td.why { background: #F8FAFC; color: var(--muted); font-size: 11.5px; }
+.cmp-table td.good { background: #F0FDF4; font-size: 12px; }
+
+/* ── CHAIN ── */
+.chain { display: flex; flex-direction: column; gap: 0.7rem; margin-bottom: 0.9rem; }
+.chain-step { display: flex; gap: 0.7rem; align-items: flex-start; }
+.chain-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--amber); color: #fff;
+  font-size: 11px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 2px;
+}
+.chain-content .ct { font-size: 12.5px; font-weight: 700; margin-bottom: 0.25rem; }
+
+/* ── BLUE/RED TEAM ── */
+.team-box {
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 0.9rem;
+}
+.team-box.blue { background: var(--blue-l); border: 1.5px solid var(--blue); }
+.team-box.red  { background: var(--red-l); border: 1.5px solid var(--red); }
+.team-box .tb-label { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.2rem; }
+.team-box.blue .tb-label { color: var(--blue); }
+.team-box.red .tb-label  { color: var(--red); }
+.team-box .tb-title { font-size: 14px; font-weight: 700; margin-bottom: 0.4rem; }
+.team-box.blue .tb-title { color: var(--blue); }
+.team-box.red .tb-title  { color: var(--red); }
+.team-box .tb-desc { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+
+/* ── PHASE FLOW ── */
+.phase-flow { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.phase-item {
+  flex: 1;
+  min-width: 110px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  text-align: center;
+}
+.phase-item .ph-num { font-size: 10px; font-weight: 800; color: var(--muted); letter-spacing: 0.05em; }
+.phase-item .ph-time { font-size: 10px; color: var(--muted); }
+.phase-item .ph-title { font-size: 12px; font-weight: 700; color: var(--text); margin-top: 0.2rem; }
+.phase-item .ph-desc { font-size: 10.5px; color: var(--muted); margin-top: 0.15rem; line-height: 1.4; }
+
+/* ── PERSPECTIVE GRID (팀장 레드팀) ── */
+.persp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin-bottom: 1rem; }
+.persp-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.8rem;
+  border-top: 3px solid var(--amber);
+}
+.persp-card .pc-title { font-size: 12.5px; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; }
+.persp-card .pc-focus { font-size: 11px; color: var(--muted); margin-bottom: 0.5rem; }
+
+/* ── SOCDR BOX ── */
+.socdr-box {
+  background: #FFFBEB;
+  border: 1.5px solid #F59E0B;
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 0.9rem;
+}
+.socdr-box .sb-title { font-size: 13px; font-weight: 700; color: #92400E; margin-bottom: 0.5rem; }
+.socdr-row { display: flex; gap: 0.5rem; align-items: flex-start; margin-bottom: 0.3rem; }
+.socdr-key {
+  font-size: 11px; font-weight: 800;
+  background: #F59E0B; color: #fff;
+  padding: 0.1rem 0.5rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+  min-width: 32px;
+  text-align: center;
+}
+.socdr-val { font-size: 12.5px; color: #78350F; }
+
+/* ── EMPTY STATE ── */
+.empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--muted);
+}
+.empty .ei { font-size: 2.5rem; margin-bottom: 0.75rem; }
+.empty p { font-size: 13px; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── ROLE VIEWS ── */
+.role-view { display: none; }
+.role-view.active { display: block; }
+
+/* ── MODULE COLOR CLASSES ── */
+.m1 { --mc: #1B3A6B; } .m1 .module-header { border-color: #1B3A6B; } .m1 .module-badge { background: #1B3A6B; } .m1 .module-title { color: #1B3A6B; }
+.m2 { --mc: #0F6B4F; } .m2 .module-header { border-color: #0F6B4F; } .m2 .module-badge { background: #0F6B4F; } .m2 .module-title { color: #0F6B4F; }
+.m3 { --mc: #6B3A1B; } .m3 .module-header { border-color: #6B3A1B; } .m3 .module-badge { background: #6B3A1B; } .m3 .module-title { color: #6B3A1B; }
+.m4 { --mc: #4F0F6B; } .m4 .module-header { border-color: #4F0F6B; } .m4 .module-badge { background: #4F0F6B; } .m4 .module-title { color: #4F0F6B; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 800px) {
+  .sidebar { display: none; }
+  .main { padding: 1rem; }
+  .checklist-box .cb-cols { grid-template-columns: 1fr; }
+  .persp-grid { grid-template-columns: 1fr; }
+  .phase-flow { flex-direction: column; }
+  .role-header { flex-direction: column; align-items: flex-start; }
+  .step-tags { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-title">&#x1F4CB; <span>&#xD48D;&#xC0B0; &#xAD50;&#xC721;</span> &#x2014; &#xC2E4;&#xC2B5; &#xD504;&#xB86C;&#xD504;&#xD2B8;</div>
+  <div class="role-tabs">
+    <button class="role-tab indiv active" onclick="switchRole('indiv',this)">&#x270F;&#xFE0F; &#xC791;&#xC131;&#xC790; (&#xAC1C;&#xC778;)</button>
+    <button class="role-tab lead" onclick="switchRole('lead',this)">&#x1F454; &#xD300;&#xC7A5; &#xC5ED;&#xD560;</button>
+    <button class="role-tab" onclick="switchRole('all',this)">&#x1F4CB; &#xC804;&#xCCB4; &#xBCF4;&#xAE30;</button>
+  </div>
+</header>
+
+<!-- 프로세스 배너 -->
+<div class="process-banner">
+  <span class="label">개인 하네스 STEP 1~5</span>
+  <span class="step-pill always">STEP 1 블루팀</span>
+  <span class="step-pill arrow">&rarr;</span>
+  <span class="step-pill always">STEP 2 셀프 레드팀</span>
+  <span class="step-pill arrow">&rarr;</span>
+  <span class="step-pill always">STEP 3 개인 최종안</span>
+  <span class="step-pill arrow">&rarr;</span>
+  <span class="step-pill group">STEP 4 비가역성 3질문</span>
+  <span class="step-pill arrow">&rarr;</span>
+  <span class="step-pill group">STEP 5 수신자 맞춤</span>
+  <span style="font-size:11px;color:#64748B;margin-left:0.5rem">&#x2714; 항상 = 개인 실습 공통 | &#xFF0B; 조별 = STEP 4&middot;5 추가</span>
+</div>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-section">
+    <div class="sb-label">역할</div>
+    <div class="sb-item active" onclick="switchRole('indiv',null)"><span>&#x270F;&#xFE0F;</span> 작성자 (개인)</div>
+    <div class="sb-item" onclick="switchRole('lead',null)"><span>&#x1F454;</span> 팀장 역할</div>
+    <div class="sb-item" onclick="switchRole('all',null)"><span>&#x1F4CB;</span> 전체 보기</div>
+  </div>
+  <div class="sb-section">
+    <div class="sb-label">공통 도구</div>
+    <a class="sb-sub" href="#checklist-box">&#x2705; STEP 1&middot;2&middot;3 체크리스트</a>
+    <a class="sb-sub" href="#socdr-template">&#x1F4DD; SOCDR 5줄 템플릿</a>
+  </div>
+  <div class="sb-section" id="sb-modules">
+    <div class="sb-label">모듈</div>
+    <div class="sb-item"><span class="sb-dot" style="background:#1B3A6B"></span>M1 SOCDR 첫 경험</div>
+    <a class="sb-sub" href="#m1-1">실습1 SOCDR 5줄 vs GPT (p.26)</a>
+    <a class="sb-sub" href="#m1-2">실습2 수신자별 SOCDR (p.28)</a>
+    <div class="sb-item" style="margin-top:0.3rem"><span class="sb-dot" style="background:#0F6B4F"></span>M2 개인 단위 하네스</div>
+    <a class="sb-sub" href="#m2-3">실습3 피벗 해석 (p.45)</a>
+    <a class="sb-sub" href="#m2-4">실습4 월간 리포트 (p.49)</a>
+    <a class="sb-sub" href="#m2-5">실습5 피드백 루프 (p.55)</a>
+    <a class="sb-sub" href="#m2-6">실습6 SOP 초안 (p.57)</a>
+    <a class="sb-sub" href="#m2-7">실습7 체크리스트 파생 (p.60)</a>
+    <div class="sb-item" style="margin-top:0.3rem"><span class="sb-dot" style="background:#6B3A1B"></span>M3 판단 충돌</div>
+    <a class="sb-sub" href="#m3-blue">블루팀 프롬프트 (p.72)</a>
+    <a class="sb-sub" href="#m3-red">레드팀 프롬프트 (p.73)</a>
+    <a class="sb-sub" href="#m3-step4">팀장 레드팀 STEP 4 (p.78)</a>
+    <a class="sb-sub" href="#m3-step5">최종 합의 STEP 5 (p.79)</a>
+    <div class="sb-item" style="margin-top:0.3rem"><span class="sb-dot" style="background:#4F0F6B"></span>M4 현장 하네스</div>
+    <a class="sb-sub" href="#m4-8">실습8 카톡&rarr;인수인계 (p.93)</a>
+    <a class="sb-sub" href="#m4-9">실습9 일지&rarr;이메일 (p.96)</a>
+    <a class="sb-sub" href="#m4-10">실습10 KPT&rarr;제안서 (p.98)</a>
+    <a class="sb-sub" href="#m4-11">실습11 SOP 연쇄 재가공 (p.100)</a>
+    <a class="sb-sub" href="#m4-12">실습12 파일럿 계획 (p.102)</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ═══ SOCDR 템플릿 (공통 참조용) ═══ -->
+<div class="socdr-box" id="socdr-template">
+  <div class="sb-title">&#x1F4DD; SOCDR 5줄 템플릿 &#x2014; GPT를 열기 전에 먼저 쓰세요</div>
+  <div class="socdr-row"><span class="socdr-key">S</span><span class="socdr-val">Situation &#x2014; 지금 무슨 상황인가? (데이터 한 줄)</span></div>
+  <div class="socdr-row"><span class="socdr-key">O</span><span class="socdr-val">Options &#x2014; 선택지가 뭐가 있나? (2~3개)</span></div>
+  <div class="socdr-row"><span class="socdr-key">C</span><span class="socdr-val">Criteria &#x2014; 뭘 기준으로 고를 건가?</span></div>
+  <div class="socdr-row"><span class="socdr-key">D</span><span class="socdr-val">Decision &#x2014; 나는 어느 쪽인가? (1줄 결론)</span></div>
+  <div class="socdr-row"><span class="socdr-key">R</span><span class="socdr-val">Reflection &#x2014; 이 결론이 틀릴 수 있는 조건은?</span></div>
+  <div style="font-size:11.5px;color:#92400E;margin-top:0.6rem">&#x2728; 5줄을 채운 뒤 GPT에 넣으면 &quot;내 판단 먼저&quot;가 됩니다. GPT가 곧 내 답이 되는 것을 막는 장치.</div>
+</div>
+
+<!-- ═══ 공용 체크리스트 STEP 1·2·3 ═══ -->
+<div class="checklist-box" id="checklist-box">
+  <div class="cb-title">&#x2705; 개인 실습 공용 체크리스트 &#x2014; STEP 1&middot;2&middot;3</div>
+  <div style="font-size:11.5px;color:var(--muted);margin-bottom:0.7rem">실습 1&middot;2 / 실습 3~7 / M3 조별 실습 / 실습 8~12 &#x2014; 실습이 끝날 때마다 3가지를 스스로 점검합니다.</div>
+  <div class="cb-cols">
+    <div class="cb-col">
+      <div class="cb-step">STEP 1</div>
+      <div class="cb-main">판단을 먼저 꺼냈는가</div>
+      <div class="cb-desc">GPT 창을 열기 전에 내 가설&middot;선택&middot;결론을 1줄이라도 종이에 꺼냈는가.</div>
+      <div class="cb-ex">예: &quot;B라인 불량은 재료 로트 때문일 가능성이 크다&quot;</div>
+      <div class="cb-miss">빠지면: GPT 답이 곧 내 답이 된다. 판단 근육이 자라지 않는다.</div>
+    </div>
+    <div class="cb-col">
+      <div class="cb-step">STEP 2</div>
+      <div class="cb-main">나란히 비교했는가</div>
+      <div class="cb-desc">GPT 결과와 내 판단을 한 화면에 두고 '차이점 3가지'를 집어낼 수 있는가.</div>
+      <div class="cb-ex">예: 내 판단은 재료 / GPT는 설비&middot;온도 &#x2014; 차이점과 이유를 표로 메모했다.</div>
+      <div class="cb-miss">빠지면: 검증 없이 초안을 그대로 들고 간다. 숫자&middot;원인 오류를 못 잡는다.</div>
+    </div>
+    <div class="cb-col">
+      <div class="cb-step">STEP 3</div>
+      <div class="cb-main">최종 선택의 이유를 적었는가</div>
+      <div class="cb-desc">블루(GPT 초안) + 셀프 레드(내 반박)를 읽고 '내 최종본을 왜 이렇게 골랐는가'를 1줄로 적었는가.</div>
+      <div class="cb-ex">예: &quot;재료 로트 이력 확인이 가장 빠른 검증이라 우선 채택&quot;</div>
+      <div class="cb-miss">빠지면: 팀장 질문에 근거를 말할 수 없다. 수신자가 설득되지 않는다.</div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:var(--teal);margin-top:0.7rem">&#x2605; 조별 실습(STEP 4&middot;5)은 이 3단계를 끝낸 뒤에 팀장 레드 &middot; 최종 합의가 추가됩니다.</div>
+</div>
+
+
+<!-- ══ 작성자 VIEW ══ -->
+<div class="role-view active" id="view-indiv">
+  <div class="role-header">
+    <div class="role-icon" style="background:#EEF3FB">&#x270F;&#xFE0F;</div>
+    <div>
+      <div class="role-title">작성자 역할 &#x2014; 개인 실습</div>
+      <div class="role-desc">GPT로 초안을 만들고, STEP 1&middot;2&middot;3을 반드시 완료합니다</div>
+    </div>
+    <div class="step-tags">
+      <span class="step-tag" style="background:#EEF3FB;color:#1B3A6B">STEP 1 블루팀</span>
+      <span class="step-tag" style="background:#EEF3FB;color:#2563A8">STEP 2 셀프 레드팀</span>
+      <span class="step-tag" style="background:#EEF3FB;color:#3B82C4">STEP 3 최종안</span>
+    </div>
+  </div>
+
+  <!-- ── M1 ── -->
+  <div class="module-section m1">
+    <div class="module-header">
+      <span class="module-badge">M1</span>
+      <span class="module-title">AI와 협업하는 판단의 언어 &#x2014; SOCDR 첫 경험</span>
+      <div class="module-meta"><span class="tag indiv">개인</span></div>
+    </div>
+
+    <div class="card open" id="m1-1">
+      <div class="card-header" onclick="toggle(this)">
+        <span class="step-badge" style="background:#1B3A6B">1</span>
+        <span class="card-title">실습 1 &#x2014; SOCDR 5줄 vs GPT 답 나란히 비교 (1 of 12 &middot; 개인 20분 &middot; 교안 p.26)</span>
+        <span class="tag indiv">개인</span><span class="chevron">&#x25B6;</span>
+      </div>
+      <div class="card-body">
+        <div class="ctx-box">&#x2776; SOCDR 5줄을 종이에 먼저 적는다 &rarr; &#x2777; GPT에 같은 상황을 넣고 초안을 받는다 &rarr; &#x2778; 내 5줄과 GPT 결과를 나란히 놓고 STEP 1&middot;2&middot;3 점검</div>
+        <div class="data-box"><div class="dl">&#x1F4CA; 사용 데이터</div>&#x25CB;&#x25CB;전자_커넥터공장_실습데이터.xlsx &rarr; <strong>월별_요약 시트</strong> (B라인 12월 행 주목)</div>
+
+        <div class="prompt-label">&#x2460; SOCDR 5줄 먼저 작성 (종이 or 메모장) <button class="copy-btn" onclick="cp(this)">복사</button></div>
+        <div class="prompt-box">S: B라인 도금불량률이 하반기 내내 4% 전후 고착 &#x2014; 목표 3.5%를 넘는다
+O: (1) 약품 농도 매일 측정 강화 (2) 3번 히터 점검&middot;교체 (3) 신입 OJT 연장
+C: 비용 낮고 즉시 시행 가능한 것 우선
+D: 1번(약품 농도 매일 측정) 먼저
+R: 히터가 진짜 원인이면 농도만으로는 부족</div>
+
+        <div class="prompt-label">&#x2461; GPT에 같은 상황 넣기 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+        <div class="prompt-box">당신은 &#x25CB;&#x25CB;전자 커넥터 공장의 품질관리 담당자입니다.
+아래는 B라인 도금공정 월별 불량률 데이터입니다.
+
+<span class="ph">[월별_요약 시트 B라인 데이터 붙여넣기]</span>
+
+B라인 도금불량률이 하반기 내내 4% 전후에 고착되어 있습니다.
+개선안 3가지와 각 장단점을 정리해 주세요.</div>
+
+        <div class="point-box"><div class="pl">&#x1F4A1; 프롬프트 포인트</div>내 5줄(SOCDR)과 GPT 결과를 나란히 놓으면 '내가 놓친 것'과 'GPT가 틀린 것'이 동시에 보입니다. 판단을 먼저 꺼내야 비교가 됩니다.</div>
+      </div>
+    </div>
+
+    <div class="card" id="m1-2">
+      <div class="card-header" onclick="toggle(this)">
+        <span class="step-badge" style="background:#1B3A6B">2</span>
+        <span class="card-title">실습 2 &#x2014; 리포트용 SOCDR 1장: 수신자로 C&middot;R이 달라진다 (2 of 12 &middot; 개인 30분 &middot; 교안 p.28)</span>
+        <span class="tag indiv">개인</span><span class="chevron">&#x25B6;</span>
+      </div>
+      <div class="card-body">
+        <div class="ctx-box">같은 SOCDR을 수신자(생산팀장/설비팀/후공정/야간조)에 맞춰 GPT로 1장씩 만듭니다. 수신자만 바꿔도 문장&middot;강조점이 달라지는 걸 체험합니다.</div>
+        <div class="prompt-label">수신자 A &#x2014; 생산팀장 보고용 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+        <div class="prompt-box">당신은 &#x25CB;&#x25CB;전자 커넥터 공장의 도금공정 작업자입니다.
+아래는 내가 정리한 SOCDR입니다.
+
+<span class="ph">[위 SOCDR 5줄 붙여넣기]</span>
+
+이것을 <strong>생산팀장</strong>에게 보고하는 1장짜리 문서로 바꿔 주세요.
+팀장이 가장 궁금해할 것: 비용, 일정, 효과 추정.
+톤은 간결하고 보고서 문체로.</div>
+
+        <div class="prompt-label">수신자 B &#x2014; 야간조 인수인계용 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+        <div class="prompt-box">같은 SOCDR을 <strong>야간조</strong> 교대 인수인계 메모로 바꿔 주세요.
+야간조가 가장 먼저 확인할 것: 약품 농도 기준값, 히터 온도 확인 포인트.
+문장은 짧고 쉽게, 3~5줄로.</div>
+
+        <div class="point-box"><div class="pl">&#x1F4A1; 프롬프트 포인트</div>프롬프트 4요소(역할/맥락/조건/형식) 중 <strong>수신자(=맥락)</strong>만 바꿔도 GPT의 어휘 수준과 강조점이 달라집니다. 같은 판단을 누구에게 전달하느냐가 문서의 형태를 결정합니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── M2 ── -->
+  <div class="module-section m2">
+    <div class="module-header">
+      <span class="module-badge">M2</span>
+      <span class="module-title">혼자서 끝까지 &#x2014; 개인 단위 하네스</span>
+      <div class="module-meta"><span class="tag indiv">개인</span></div>
+    </div>
+
+    <div class="card" id="m2-3">
+      <div class="card-header" onclick="toggle(this)">
+        <span class="step-badge" style="background:#0F6B4F">3</span>
+        <span class="card-title">실습 3 &#x2014; 피벗 요약표 &rarr; GPT에게 해석시키기 (3 of 12 &middot; 개인 15분 &middot; 교안 p.45)</span>
+        <span class="tag indiv">개인</span><span class="chevron">&#x25B6;</span>
+      </div>
+      <div class="card-body">
+        <div class="data-box"><div class="dl">&#x1F4CA; 사용 데이터</div>월별_요약 시트에서 <strong>A&middot;B라인 7&middot;8&middot;10&middot;12월</strong> 행 복붙</div>
+        <div class="prompt-label">프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+        <div class="prompt-box">당신은 &#x25CB;&#x25CB;전자 커넥터 공장의 품질관리 담당자입니다.
+아래는 2024년 하반기(7~12월) A라인&middot;B라인의
+월별 불량률, 정지시간, 납기준수율 요약표입니다.
+
+<span class="ph">[피벗 데이터 표 붙여넣기]</span>
+
+이 데이터를 보고,
+(1) 좋아진 변화 3개
+(2) 나빠진 변화 3개
+(3) 12월 현재 상황 한 줄 요약
+&#x2014; 을 품질관리 담당자의 관점에서 작성해 주세요.
+각 항목에는 반드시 구체적인 숫자 근거를 포함해 주세요.</div>
+        <div class="point-box"><div class="pl">&#x1F4A1; 프롬프트 포인트</div>&quot;관점(품질관리 담당자)&quot; + &quot;출력 구조(좋아진 3개/나빠진 3개/요약)&quot; + &quot;조건(숫자 근거 포함)&quot; &#x2014; 3가지를 동시에 지정하면 바로 쓸 수 있는 보고용 문장이 나옵니다.</div>
+      </div>
+    </div>
+
+    <div class="card" id="m2-4">
+      <div class="card-header" onclick="toggle(this)">
+        <span class="step-badge" style="background:#0F6B4F">4</span>
+        <span class="card-title">실습 4 &#x2014; 임원 보고용 월간 품질 리포트 초안 만들기 (4 of 12 &middot; 개인 25분 &middot; 교안 p.49)</span>
+        <span class="tag indiv">개인</span><span class="chevron">&#x25B6;</span>
+      </div>
+      <div class="card-body">
+        <div class="data-box"><div class="dl">&#x1F4CA; 사용 데이터</div>실습 3 피벗 표 + <strong>현장 메모 &#x2460;(불량 원인 추정)</strong> + <strong>현장 메모 &#x2461;(개선 활동)</strong></div>
+        <div class="prompt-label">프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+        <div class="prompt-box">당신은 &#x25CB;&#x25CB;전자 커넥터 공장의 품질관리 팀장입니다.
+아래는 2024년 12월 기준 월간 품질 현황 데이터와 현장 메모입니다.
+
+<span class="ph">[피벗 데이터 표 붙여넣기]</span>
+<span class="ph">[현장 메모 &#x2460;: 불량 원인 추정 붙여넣기]</span>
+<span class="ph">[현장 메모 &#x2461;: 개선 활동 내용 붙여넣기]</span>
+
+위 내용을 바탕으로, 공장장에게 보고하는
+&quot;2024년 12월 월간 품질 리포트&quot; 초안을 작성해 주세요.
+구성:
+(1) Executive Summary &#x2014; 3줄 이내, 핵심만
+(2) 핵심 지표 현황 &#x2014; 라인별 비교 표
+(3) 이달의 성과 &#x2014; 잘된 것
+(4) 주의가 필요한 부분 &#x2014; 우려사항과 원인
+(5) 다음 달 중점 과제 3개 &#x2014; 각 과제에 담당 부서와 완료 기한 포함
+
+톤은 간결하고 객관적으로,
+모든 주장에 데이터 근거를 함께 써 주세요.</div>
+        <div class="point-box"><div class="pl">&#x1F4A1; 프롬프트 포인트</div>역할 지정(&quot;품질관리 팀장&quot;) + 구조 지정((1)~(5) 섹션) + 조건 지정(&quot;데이터 근거 포함&quot;, &quot;완료 기한 포함&quot;) &#x2014; 이 3가지가 핵심 기법입니다.</div>
+      </div>
+    </div>
+
+    <div class="card" id="m2-5">
+      <div class="card-header" onclick="toggle(this)">
+        <span class="step-badge" style="background:#0F6B4F">5</span>
+        <span class="card-title">실습 5 &#x2014; 리포트 다듬기: 피드백 루프 (5 of 12 &middot; 개인 15분 &middot; 교안 p.55)</span>
+        <span class="tag indiv">개인</span><span class="chevron">&#x25B6;</span>
+      </div>
+      <div class="card-body">
+        <div class="ctx-box">실습 4 결과를 열어둔 상태에서 아래 수정 프롬프트를 하나씩 입력합니다.</div>
+        <div class="chain">
+          <div class="chain-step">
+            <span class="chain-num">1</span>
+            <div class="chain-content">
+              <div class="ct">Executive Summary 강화</div>
+              <div class="prompt-label">프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+              <div class="prompt-box">Executive Summary를 좀 더 임팩트 있게 써줘.
+공장장이 읽고 3초 안에 핵심을 파악할 수 있도록.
+첫 문장에 가장 중요한 내용이 와야 해.</div>
+            </div>
+          </div>
+          <div class="chain-step">
+            <span class="chain-num">2</span>
+            <div class="chain-content">
+              <div class="ct">중점 과제에 표 추가</div>
+              <div class="prompt-label">프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+              <div class="prompt-box">&quot;다음 달 중점 과제&quot; 부분을 표 형식으로 바꿔줘.
+열은 '과제 번호 | 과제 내용 | 담당 부서 | 완료 기한 | 성공 기준' 으로.</div>
+            </div>
+          </div>
+          <div class="chain-step">
+            <span class="chain-num">3</span>
+            <div class="chain-content">
+              <div class="ct">원인 분석 문단 추가</div>
+              <div class="prompt-label">프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+              <div class="prompt-box">&quot;주의가 필요한 부분&quot; 다음에 'B라인 불량 원인 분석' 문단을 추가해줘.
+원인은 (1) 약품 농도 편차, (2) 설비 노후화(2018년 도입),
+(3) 신입 투입 후 숙련도 부족 &#x2014; 이 3가지를 중심으로.
+추정 원인임을 명시해줘.</div>
+            </div>
+          </div>
+        </div>
+        <div class="point-box"><div class="pl">&#x1F4A1; 프롬프트 포인트</div>문제&middot;임팩트 조정: &quot;임팩트 있게&quot;, &quot;3초 안에&quot;처럼 기준을 주면 톤이 바뀝니다. 형식 변환: 문장&rarr;표, 표&rarr;문장 전환은 GPT가 매우 잘합니다. 내용 추가: 원인을 직접 제공하면 GPT가 보고서로 정리해줍니다.</div>
+      </div>
+    </div>
+
+    <div class="card" id="m2-6">
+      <div class="card-header" onclick="toggle(this)">
+        <span class="step-badge" style="background:#0F6B4F">6</span>
+        <span class="card-title">실습 6 &#x2014; SOP(작업표준서) 초안 만들기 (6 of 12 &middot; 개인 20분 &middot; 교안 p.57)</span>
+        <span class="tag indiv">개인</span><span class="chevron">&#x25B6;</span>
+      </div>
+      <div class="card-body">
+        <div class="data-box"><div class="dl">&#x1F4CA; 사용 데이터</div><strong>현장 작업 메모</strong> (비정형 &#x2014; 도금 공정 순서 + 주의사항) 복붙</div>
+        <div class="prompt-label">프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+        <div class="prompt-box">당신은 제조업 품질관리 전문가입니다.
+아래는 B라인 멀티핀 커넥터 도금 공정의
+작업 절차와 주의사항을 메모한 내용입니다.
+
+<span class="ph">[위 현장 작업 메모 붙여넣기]</span>
+
+이 메모를 바탕으로, 현장 작업자가 보고 바로 따라할 수 있는
+SOP(작업표준서) 초안을 작성해 주세요.
+구성:
+(1) 문서 정보 (번호&middot;작성일&middot;개정이력)
+(2) 목적
+(3) 적용 범위
+(4) 작업 절차 &#x2014; 단계별, 각 단계에 핵심 포인트 한 줄 포함
+(5) 주의사항
+(6) 이상 발생 시 조치 방법
+쉬운 문장으로 써 주세요.</div>
+        <div class="point-box"><div class="pl">&#x1F4A1; 프롬프트 포인트</div>비정형 메모 &rarr; 정형 문서 변환은 GPT의 핵심 가치입니다. 구성(6섹션)을 명시하면 빠짐 없이 정리됩니다.</div>
+      </div>
+    </div>
+
+    <div class="card" id="m2-7">
+      <div class="card-header" onclick="toggle(this)">
+        <span class="step-badge" style="background:#0F6B4F">7</span>
+        <span class="card-title">실습 7 &#x2014; SOP에서 점검 체크리스트 파생 만들기 (7 of 12 &middot; 개인 10분 &middot; 교안 p.60)</span>
+        <span class="tag indiv">개인</span><span class="chevron">&#x25B6;</span>
+      </div>
+      <div class="card-body">
+        <div class="ctx-box">실습 6에서 만든 SOP를 열어둔 채 아래 프롬프트를 입력합니다.</div>
+        <div class="prompt-label">프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+        <div class="prompt-box">위에서 작성한 SOP를 바탕으로,
+현장 리더가 매일 출력해서 쓸 수 있는
+&quot;일일 점검 체크리스트&quot;를 만들어 주세요.
+
+형식:
+&#x2610; 체크 항목 | 기준값 | 확인 시점 | 이상 시 조치
+
+도금 공정 7단계 각각에서 가장 중요한 확인 포인트 1개씩,
+총 7개 항목으로.</div>
+        <div class="point-box"><div class="pl">&#x1F4A1; 프롬프트 포인트</div>하나의 문서(SOP)에서 다른 문서(체크리스트)를 &quot;파생&quot;시키는 연쇄 프롬프트 패턴입니다. 매번 처음부터 쓸 필요가 없습니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── M3 ── -->
+  <div class="module-section m3">
+    <div class="module-header">
+      <span class="module-badge">M3</span>
+      <span class="module-title">팀과 함께 &#x2014; 판단이 충돌하는 자리</span>
+      <div class="module-meta"><span class="tag group">조별 90분 &middot; 교안 p.74~79</span></div>
+    </div>
+
+    <!-- PHASE FLOW -->
+    <div class="phase-flow">
+      <div class="phase-item">
+        <div class="ph-num">PHASE 1</div><div class="ph-time">15분</div>
+        <div class="ph-title">조별 설계</div>
+        <div class="ph-desc">이슈 1개 선정 + SOCDR 합의<br>블루&middot;레드 2~3인씩 분리</div>
+      </div>
+      <div class="phase-item">
+        <div class="ph-num">PHASE 2</div><div class="ph-time">25분</div>
+        <div class="ph-title">독립 작업</div>
+        <div class="ph-desc">블루팀은 지지 프롬프트<br>레드팀은 빈틈 프롬프트<br>서로 결과를 보지 않는다</div>
+      </div>
+      <div class="phase-item">
+        <div class="ph-num">PHASE 3</div><div class="ph-time">20분</div>
+        <div class="ph-title">대면 충돌</div>
+        <div class="ph-desc">양쪽이 결과를 테이블에 놓고<br>서로 반박&middot;질문<br>타협이 아닌 '선택'을 본다</div>
+      </div>
+      <div class="phase-item">
+        <div class="ph-num">PHASE 4</div><div class="ph-time">15분</div>
+        <div class="ph-title">팀장 레드팀</div>
+        <div class="ph-desc">강사가 팀장 관점으로 추가 지적<br>조에서 수용&middot;반려를 결정</div>
+      </div>
+      <div class="phase-item">
+        <div class="ph-num">PHASE 5</div><div class="ph-time">15분</div>
+        <div class="ph-title">최종 합의</div>
+        <div class="ph-desc">개선제안서 1안 확정<br>비가역성 3질문 + 배제 이유 기재</div>
+      </div>
+    </div>
+
+    <div class="card open" id="m3-blue">
+      <div class="card-header" onclick="toggle(this)">
+        <span class="step-badge" style="background:#1D4ED8">B</span>
+        <span class="card-title">블루팀 프롬프트 카드 &#x2014; 지지조 (PHASE 2 &middot; 교안 p.72, p.77)</span>
+        <span class="tag" style="background:#EFF6FF;color:#1D4ED8">블루팀</span><span class="chevron">&#x25B6;</span>
+      </div>
+      <div class="card-body">
+        <div class="team-box blue">
+          <div class="tb-label">BLUE TEAM &middot; 지지조</div>
+          <div class="tb-title">개선안의 근거를 세운다</div>
+          <div class="tb-desc">이미 정한 방향을 전제로 두고 출발. 장점&middot;효과&middot;근거 데이터에 집중. 수신자가 '승인'할 이유를 모은다.</div>
+        </div>
+        <div class="prompt-label">블루팀 GPT 프롬프트 (그대로 복붙 가능) <button class="copy-btn" onclick="cp(this)">복사</button></div>
+        <div class="prompt-box">역할: &#x25CB;&#x25CB;전자 B라인 도금공정 품질 엔지니어.
+맥락: 도금불량 4.2% 문제에 대해
+[개선안 1번: 약품 농도 매일 측정 + 농도 편차 SOP 강화]를
+시행하려 한다.
+
+조건:
+(1) 이 개선안을 선택한 근거 3가지를 월별 요약 현장 메모 &#x2460;을 근거로 제시
+(2) 예상 효과를 정량(불량률 % 기간)으로 추정
+(3) 의사결정자(공장장)가 승인할 포인트 3가지
+
+형식: 제목 + 3섹션, 각 섹션 3-5줄.</div>
+        <div class="point-box"><div class="pl">&#x1F4A1; 핵심 질문</div>&middot; 이 개선안이 해결하는 문제는 무엇인가<br>&middot; 같은 방향으로 효과를 본 사내 타사 사례<br>&middot; 도입 시 정량적 효과 추정<br>&middot; 수신자(팀장)가 납득할 3가지 근거</div>
+      </div>
+    </div>
+
+    <div class="card" id="m3-red">
+      <div class="card-header" onclick="toggle(this)">
+        <span class="step-badge" style="background:#B91C1C">R</span>
+        <span class="card-title">레드팀 프롬프트 카드 &#x2014; 빈틈조 (PHASE 2 &middot; 교안 p.73, p.77)</span>
+        <span class="tag" style="background:#FEF2F2;color:#B91C1C">레드팀</span><span class="chevron">&#x25B6;</span>
+      </div>
+      <div class="card-body">
+        <div class="team-box red">
+          <div class="tb-label">RED TEAM &middot; 빈틈조</div>
+          <div class="tb-title">개선안의 빈틈을 찾는다</div>
+          <div class="tb-desc">정해진 방향을 의심하고 출발. 부작용&middot;반례&middot;비용에 집중. 수신자가 '보류'할 이유를 모은다.</div>
+        </div>
+        <div class="prompt-label">레드팀 GPT 프롬프트 (그대로 복붙 가능) <button class="copy-btn" onclick="cp(this)">복사</button></div>
+        <div class="prompt-box">역할: &#x25CB;&#x25CB;전자 본사 감사팀 품질 감사관.
+이 개선안을 승인하기 전에 빈틈을 찾아야 한다.
+맥락: 도금불량 4.2% 문제에 대해
+[개선안 1번: 약품 농도 매일 측정 + 농도 편차 SOP 강화]가
+제안됐다.
+
+조건:
+(1) 이 개선안이 실패할 수 있는 시나리오 3가지를 구체적으로
+(2) 다른 원인(히터&middot;신입)일 가능성에 대한 반례를 현장 메모 KPT에서 찾아 제시
+(3) 승인 보류를 권고할 이유 3가지
+
+형식: 제목 + 3섹션, 각 섹션 3-5줄.</div>
+        <div class="point-box"><div class="pl">&#x1F4A1; 핵심 질문</div>&middot; 이 개선안이 실패하는 가장 그럴듯한 시나리오 3개<br>&middot; 숨은 비용&middot;인력 부담은 무엇인가<br>&middot; 어떤 사람&middot;공정이 손해를 보는가<br>&middot; 되돌리기 어려운 지점은 어디인가</div>
+      </div>
+    </div>
+
+    <div class="card" id="m3-step4">
+      <div class="card-header" onclick="toggle(this)">
+        <span class="step-badge" style="background:#D4820A">4</span>
+        <span class="card-title">팀장 레드팀 &#x2014; 외부 관점 3종 (PHASE 4 &middot; STEP 4 &middot; 교안 p.78)</span>
+        <span class="tag group">조별 팀장</span><span class="chevron">&#x25B6;</span>
+      </div>
+      <div class="card-body">
+        <div class="ctx-box">PHASE 3 충돌 결과로 '조 권고안 1안'이 나왔다. 팀장은 이걸 그대로 올리지 않고 외부 관점으로 다시 검증한다.</div>
+
+        <div class="persp-grid">
+          <div class="persp-card">
+            <div class="pc-title">&#x1F3ED; 공장장&middot;생산관리</div>
+            <div class="pc-focus">초점: 비용&middot;가동률&middot;생산계획 영향</div>
+            <div class="prompt-label">팀장 프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+            <div class="prompt-box" style="font-size:11px">이 개선안을 공장장&middot;생산관리가 가장 먼저 반대할
+이유 3가지를 구체적 수치로 알려주세요.
+월 생산계획&middot;라인 가동률 영향과,
+월간 절감액이 기대만큼 안 나오는 시나리오 포함.</div>
+          </div>
+          <div class="persp-card">
+            <div class="pc-title">&#x1F477; 현장 반장</div>
+            <div class="pc-focus">초점: 운영상 막힐 지점</div>
+            <div class="prompt-label">팀장 프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+            <div class="prompt-box" style="font-size:11px">이 개선안을 현장에서 실행할 때
+반장이 가장 먼저 걱정할 운영상 문제 3가지를
+알려주세요. 인원 배치&middot;교대 시간&middot;기존 업무와
+충돌 관점에서.</div>
+          </div>
+          <div class="persp-card">
+            <div class="pc-title">&#x1F50D; 후공정&middot;품질팀(QC)</div>
+            <div class="pc-focus">초점: 다음 공정&middot;검사 기준과의 충돌</div>
+            <div class="prompt-label">팀장 프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+            <div class="prompt-box" style="font-size:11px">이 개선안이 다음 공정(가공&middot;검사&middot;포장)과
+품질팀 검사 기준에 어떻게 될 수 있는지
+리스크 3가지를 알려주세요.
+특히 시행 초기 2~4주 동안.</div>
+          </div>
+        </div>
+
+        <div class="step-guide">
+          <div class="sg-title">&#x1F454; 팀장이 직접 던지는 5가지 질문</div>
+          <div class="sg-item"><span class="sg-num">1</span><span><strong>Q1 &middot; 비용:</strong> 이 개선안 총 비용은 얼마고, 월간 얼마 절감되는가? (숫자 없으면 Red 재진행)</span></div>
+          <div class="sg-item"><span class="sg-num">2</span><span><strong>Q2 &middot; 일정:</strong> 언제 시작해서 언제 효과가 나오는가? 라인 정지 필요한가?</span></div>
+          <div class="sg-item"><span class="sg-num">3</span><span><strong>Q3 &middot; 책임:</strong> 이 결정은 내 권한인가. 생산팀장/공장장 결재가 필요한가?</span></div>
+          <div class="sg-item"><span class="sg-num">4</span><span><strong>Q4 &middot; 되돌림:</strong> 효과가 없으면 어디서 멈추고 어떻게 원복하는가?</span></div>
+          <div class="sg-item"><span class="sg-num">5</span><span><strong>Q5 &middot; 증거:</strong> 2~4주 뒤 무엇을 보면 '효과 있음/없음'을 알 수 있는가?</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="m3-step5">
+      <div class="card-header" onclick="toggle(this)">
+        <span class="step-badge" style="background:#B86B0A">5</span>
+        <span class="card-title">최종 취사선택 &#x2014; 지적 반영/미반영 결정 (PHASE 5 &middot; STEP 5 &middot; 교안 p.79)</span>
+        <span class="tag group">조별 팀장</span><span class="chevron">&#x25B6;</span>
+      </div>
+      <div class="card-body">
+        <div class="ctx-box">STEP 4에서 나온 외부 관점 지적을 하나씩 판단합니다. 반영/미반영 어느 쪽이든 이유 1줄.</div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:0.5rem">&#x2460; 반영/미반영 판단표</div>
+        <div class="data-box">
+          <table style="width:100%;font-size:12px;border-collapse:collapse">
+            <tr style="background:#F1F5F9"><th style="padding:0.4rem;text-align:left">지적 내용</th><th style="padding:0.4rem;width:50px">반영</th><th style="padding:0.4rem;width:50px">미반영</th><th style="padding:0.4rem;text-align:left">이유 1줄</th></tr>
+            <tr><td style="padding:0.4rem;border-top:1px solid #E2E0DB">(STEP 4에서 나온 지적)</td><td style="padding:0.4rem;border-top:1px solid #E2E0DB;text-align:center">&#x2610;</td><td style="padding:0.4rem;border-top:1px solid #E2E0DB;text-align:center">&#x2610;</td><td style="padding:0.4rem;border-top:1px solid #E2E0DB">(1줄 근거)</td></tr>
+          </table>
+        </div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:0.5rem;margin-top:1rem">&#x2461; 조 권고안 최종본 &#x2014; 1장 양식</div>
+        <div class="data-box" style="font-size:12px;line-height:1.8">
+          <strong>&#x2460; 제목:</strong> B라인 도금불량 개선안 권고 &#x2014; [개선안 1번 약품 농도 관리]<br>
+          <strong>&#x2461; 근거 요약 3줄:</strong> 블루팀 결과 중 채택한 핵심 근거 3개 (현장 메모&middot;월별 요약 출처 명시)<br>
+          <strong>&#x2462; 반영한 레드 지적:</strong> STEP 4에서 반영하기로 결정한 지적 + 대응 방법<br>
+          <strong>&#x2463; 비가역성 판정:</strong> Q1~Q5 답변 요약 &middot; 되돌릴 수 있는가 / 누가 책임 / 무엇으로 검증<br>
+          <strong>&#x2464; 트리거&middot;배제 조건:</strong> 시작 조건(예: 12/23 약품 검수 완료 후) &middot; 배제 조건(예: 4주 뒤 3.9% 미만 진입 시 강화만 유지)<br>
+          <strong>&#x2465; 월요일 과제 연결:</strong> 이 권고안의 2&middot;3단계 SOP를 과제로 &#x2014; M4 축약 하네스에서 재활용
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── M4 ── -->
+  <div class="module-section m4">
+    <div class="module-header">
+      <span class="module-badge">M4</span>
+      <span class="module-title">현장 하네스 &#x2014; 내 직무에 내려놓기</span>
+      <div class="module-meta"><span class="tag indiv">개인 실습8&middot;9&middot;11&middot;12</span><span class="tag group">조별 실습10</span></div>
+    </div>
+
+    <div class="card" id="m4-8">
+      <div class="card-header" onclick="toggle(this)">
+        <span class="step-badge" style="background:#4F0F6B">8</span>
+        <span class="card-title">실습 8 &#x2014; 카톡 대화 &rarr; 교대조 인수인계서 (8 of 12 &middot; 개인 15분 &middot; 교안 p.93)</span>
+        <span class="tag indiv">개인</span><span class="chevron">&#x25B6;</span>
+      </div>
+      <div class="card-body">
+        <div class="data-box"><div class="dl">&#x1F4CA; 사용 데이터</div><strong>B라인 야간조 단체 카톡방 대화</strong> (슬라이드 샘플 전체 복붙)</div>
+        <div class="prompt-label">프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+        <div class="prompt-box">아래는 B라인 야간조 작업자들의 카카오톡 단체방 대화 내용입니다.
+
+<span class="ph">[위 카톡 대화 전체 붙여넣기]</span>
+
+이 대화에서 다음 교대조(주간조)에게 인수인계해야 할 사항을
+(1) 설비 관련
+(2) 품질/불량 관련
+(3) 자재/물류 관련
+(4) 기타 확인 필요 사항
+&#x2014; 4가지 카테고리로 분류해서 각각 핵심만 1~2문장으로 정리해 주세요.
+인수인계 문서 양식으로.</div>
+        <div class="point-box"><div class="pl">&#x1F4A1; 프롬프트 포인트</div>&quot;분류 기준(4 카테고리)&quot;을 제시하면, GPT가 뒤죽박죽인 대화에서 필요한 정보만 골라 정리합니다. 카테고리 이름은 팀 상황에 맞게 바꿔도 됩니다.</div>
+      </div>
+    </div>
+
+    <div class="card" id="m4-9">
+      <div class="card-header" onclick="toggle(this)">
+        <span class="step-badge" style="background:#4F0F6B">9</span>
+        <span class="card-title">실습 9 &#x2014; 생산일지 &rarr; 팀장 보고 이메일 (9 of 12 &middot; 개인 12분 &middot; 교안 p.96)</span>
+        <span class="tag indiv">개인</span><span class="chevron">&#x25B6;</span>
+      </div>
+      <div class="card-body">
+        <div class="data-box"><div class="dl">&#x1F4CA; 사용 데이터</div><strong>B라인 12/19 생산일지</strong> (비정형 원문) 복붙</div>
+        <div class="prompt-label">프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+        <div class="prompt-box">아래는 B라인 12월 19일 생산일지입니다.
+
+<span class="ph">[생산일지 붙여넣기]</span>
+
+이것을 팀장에게 보고하는 이메일 형식으로,
+(1) 오늘 생산 실적 요약
+(2) 주요 이슈
+(3) 내일 확인&middot;조치 필요 사항
+&#x2014; 3파트로 나눠서 200자 이내로.</div>
+        <div class="point-box"><div class="pl">&#x1F4A1; 프롬프트 포인트</div>&quot;분량 제한(200자 이내)&quot;을 주면 GPT가 핵심만 압축하게 만듭니다. 팀장 보고용이라면 간결함이 가장 중요합니다. 이 실습에서 STEP 2(셀프 레드팀) &#x2014; 숫자 원본 대조가 핵심입니다.</div>
+      </div>
+    </div>
+
+    <div class="card" id="m4-10">
+      <div class="card-header" onclick="toggle(this)">
+        <span class="step-badge" style="background:#D4820A">10</span>
+        <span class="card-title">실습 10 &#x2014; KPT 회의 메모 &rarr; 개선제안서 초안 (10 of 12 &middot; 조별 15분 &middot; 교안 p.98)</span>
+        <span class="tag group">조별</span><span class="chevron">&#x25B6;</span>
+      </div>
+      <div class="card-body">
+        <div class="ctx-box">이 실습은 조별로 진행합니다. 개인이 STEP 1&middot;2&middot;3을 완료한 결과물을 팀장이 STEP 4&middot;5로 최종 취사선택합니다.</div>
+        <div class="data-box"><div class="dl">&#x1F4CA; 사용 데이터</div><strong>B라인 품질개선회의 KPT 메모 (2024.12.18)</strong> 복붙</div>
+        <div class="prompt-label">프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+        <div class="prompt-box">아래는 B라인 품질개선회의의 KPT 메모입니다.
+
+<span class="ph">[위 KPT 메모 붙여넣기]</span>
+
+이 메모를 바탕으로, 공식 개선제안서 초안을 작성해 주세요.
+구성:
+(1) 제안 제목
+(2) 배경 및 현황
+(3) 문제점
+(4) 개선 내용
+(5) 기대 효과 &#x2014; 가능하면 정량적으로
+(6) 필요 지원 사항
+(7) 추진 일정(안)
+톤은 보고서 문체로, A4 1장 내외 분량으로.</div>
+        <div class="point-box"><div class="pl">&#x1F4A1; 프롬프트 포인트</div>KPT 메모(비정형) &rarr; 공식 개선제안서(정형) 변환입니다. 7섹션 구성을 명시하면 회의 결과가 바로 결재 문서로 올라갑니다.</div>
+      </div>
+    </div>
+
+    <div class="card" id="m4-11">
+      <div class="card-header" onclick="toggle(this)">
+        <span class="step-badge" style="background:#4F0F6B">11</span>
+        <span class="card-title">실습 11 &#x2014; SOP 재가공: 연쇄 프롬프트 3단계 (11 of 12 &middot; 개인 20분 &middot; 교안 p.100)</span>
+        <span class="tag indiv">개인</span><span class="chevron">&#x25B6;</span>
+      </div>
+      <div class="card-body">
+        <div class="ctx-box">실습 6에서 만든 도금공정 SOP를 열어두세요. 아래 프롬프트를 하나씩 순서대로 실행합니다.</div>
+        <div class="chain">
+          <div class="chain-step">
+            <span class="chain-num" style="background:#F59E0B">1</span>
+            <div class="chain-content">
+              <div class="ct">연쇄 &#x2460; &#x2014; 신입용 쉬운 버전 만들기</div>
+              <div class="prompt-label">프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+              <div class="prompt-box">위에서 작성한 SOP를 입사 1주일 된 신입 작업자가
+혼자 읽고 따라할 수 있도록 쉽게 다시 써 주세요.
+전문 용어에는 괄호로 쉬운 설명을 붙이고,
+각 단계의 '왜 이렇게 해야 하는지'를 한 줄씩 추가해 주세요.</div>
+            </div>
+          </div>
+          <div class="chain-step">
+            <span class="chain-num" style="background:#EF4444">2</span>
+            <div class="chain-content">
+              <div class="ct">연쇄 &#x2461; &#x2014; 주의사항 경고 추가</div>
+              <div class="prompt-label">프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+              <div class="prompt-box">위 신입용 SOP의 각 단계에서
+'절대 하지 말아야 할 것' 또는 '자주 실수하는 것'을
+&#x26A0; 경고 표시와 함께 한 줄씩 추가해 주세요.</div>
+            </div>
+          </div>
+          <div class="chain-step">
+            <span class="chain-num" style="background:#10B981">3</span>
+            <div class="chain-content">
+              <div class="ct">연쇄 &#x2462; &#x2014; 간단 영어 버전 만들기</div>
+              <div class="prompt-label">프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+              <div class="prompt-box">위 신입용 SOP를 외국인 근로자를 위한
+간단한 영어 버전으로 변환해 주세요.
+문장은 짧고 쉽게 (중학교 수준),
+도금 관련 전문 용어는 괄호 안에 한국어를 병기해 주세요.</div>
+            </div>
+          </div>
+        </div>
+        <div class="point-box"><div class="pl">&#x1F4A1; 프롬프트 포인트</div>&quot;연쇄 프롬프트&quot; 패턴 &#x2014; 원본 하나에서 3개 버전을 만들었습니다. 매번 처음부터 쓸 필요가 없습니다. &quot;대상 지정(신입 1주차)&quot;이 문체&middot;용어&middot;설명 깊이를 모두 바꿉니다.</div>
+      </div>
+    </div>
+
+    <div class="card" id="m4-12">
+      <div class="card-header" onclick="toggle(this)">
+        <span class="step-badge" style="background:#4F0F6B">12</span>
+        <span class="card-title">실습 12 &#x2014; 나의 3개월 GPT 활용 파일럿 계획 수립 (12 of 12 &middot; 개인 20분 &middot; 교안 p.102)</span>
+        <span class="tag indiv">개인</span><span class="chevron">&#x25B6;</span>
+      </div>
+      <div class="card-body">
+        <div class="ctx-box">M1~M4에서 배운 것 중, 우리 팀에서 가장 먼저 시도해볼 수 있는 GPT 활용 아이디어를 3~5개 적어보세요 (5분). 그 다음 GPT에게 계획으로 만들어달라고 합니다.</div>
+        <div class="data-box"><div class="dl">&#x1F4A1; 아이디어 예시 (이 중에서 골라도 됩니다)</div>
+&#x2610; 교대조 인수인계를 카톡 &rarr; GPT &rarr; 공식 인수인계서로<br>
+&#x2610; 월간 품질 리포트 초안을 GPT로 만들기<br>
+&#x2610; 반복 불량 공정 SOP 초안 작성<br>
+&#x2610; 팀장 보고 이메일을 GPT로 초안 잡기<br>
+&#x2610; 개선 아이디어를 GPT로 개선제안서로 변환<br>
+&#x2610; 신입 교육용 SOP 쉬운 버전 만들기<br>
+&#x2610; KPT 회의 메모 &rarr; 회의록 자동 생성</div>
+        <div class="prompt-label">프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+        <div class="prompt-box">아래는 내가 우리 팀에서 시도해보고 싶은
+GPT 활용 아이디어 목록입니다.
+
+<span class="ph">[자신의 아이디어 3~5개 붙여넣기]</span>
+
+이 중에서 가장 실현 가능성이 높고 효과가 큰 것 같은
+순서로 정렬하고, 1순위 아이디어에 대해
+'4단계 파일럿 계획'을 만들어 주세요.
+단계:
+(1) 준비 &#x2014; 무엇이 필요한가
+(2) 소규모 테스트 &#x2014; 이번 주 안에 어떻게 해볼 것인가
+(3) 평가 &#x2014; 효과를 어떻게 확인할 것인가
+(4) 확산 &#x2014; 잘 되면 어떻게 팀 전체로 넓힐 것인가.
+현실적이고 구체적으로.</div>
+        <div class="point-box"><div class="pl">&#x1F4A1; 프롬프트 포인트</div>GPT에게 &quot;우선순위 판단&quot;과 &quot;4단계 계획 구조&quot;를 동시에 요청하면, 아이디어 정렬에서 실행 계획까지 한 번에 나옵니다. &#x2605; 이번 주 시작할 수 있는 것이 1단계입니다.</div>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /view-indiv -->
+
+<!-- ══ 팀장 VIEW ══ -->
+<div class="role-view" id="view-lead">
+  <div class="role-header">
+    <div class="role-icon" style="background:#FEF3E2">&#x1F454;</div>
+    <div>
+      <div class="role-title">팀장 역할 &#x2014; 레드팀 &amp; 취사선택</div>
+      <div class="role-desc">STEP 4(외부 관점 검증) &middot; STEP 5(반영/미반영 결정)를 수행합니다</div>
+    </div>
+    <div class="step-tags">
+      <span class="step-tag" style="background:#FEF3E2;color:#D4820A">STEP 4 팀장 레드팀</span>
+      <span class="step-tag" style="background:#FEF3E2;color:#B86B0A">STEP 5 취사선택</span>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="module-section m3">
+    <div class="module-header">
+      <span class="module-badge">STEP 4</span>
+      <span class="module-title">팀장 레드팀 &#x2014; 합의안을 외부 관점으로 3번 다시 때린다 (교안 p.78)</span>
+    </div>
+
+    <div class="ctx-box" style="margin-bottom:1.2rem">조원들이 PHASE 3까지 만든 '조 권고안 1안'을 받아서, 3가지 외부 관점으로 빈틈을 찾습니다. 각 관점 프롬프트를 GPT에 넣고, 나온 지적을 조원들 앞에서 공유합니다.</div>
+
+    <div class="persp-grid">
+      <div class="persp-card">
+        <div class="pc-title">&#x1F3ED; 공장장&middot;생산관리</div>
+        <div class="pc-focus">초점: 비용&middot;가동률&middot;생산계획 영향</div>
+        <div class="prompt-label">GPT 프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+        <div class="prompt-box" style="font-size:11px">이 개선안을 공장장&middot;생산관리가 가장 먼저 반대할
+이유 3가지를 구체적 수치로 알려주세요.
+월 생산계획&middot;라인 가동률 영향과,
+월간 절감액이 기대만큼 안 나오는 시나리오 포함.</div>
+      </div>
+      <div class="persp-card">
+        <div class="pc-title">&#x1F477; 현장 반장</div>
+        <div class="pc-focus">초점: 운영상 막힐 지점</div>
+        <div class="prompt-label">GPT 프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+        <div class="prompt-box" style="font-size:11px">이 개선안을 현장에서 실행할 때
+반장이 가장 먼저 걱정할 운영상 문제 3가지를
+알려주세요. 인원 배치&middot;교대 시간&middot;기존 업무와
+충돌 관점에서.</div>
+      </div>
+      <div class="persp-card">
+        <div class="pc-title">&#x1F50D; 후공정&middot;품질팀(QC)</div>
+        <div class="pc-focus">초점: 다음 공정&middot;검사 기준과의 충돌</div>
+        <div class="prompt-label">GPT 프롬프트 <button class="copy-btn" onclick="cp(this)">복사</button></div>
+        <div class="prompt-box" style="font-size:11px">이 개선안이 다음 공정(가공&middot;검사&middot;포장)과
+품질팀 검사 기준에 어떻게 될 수 있는지
+리스크 3가지를 알려주세요.
+특히 시행 초기 2~4주 동안.</div>
+      </div>
+    </div>
+
+    <div class="step-guide">
+      <div class="sg-title">&#x1F454; 팀장이 직접 던지는 5가지 질문 (GPT 앞에서 그리고 팀원 앞에서)</div>
+      <div class="sg-item"><span class="sg-num">1</span><span><strong>Q1 &middot; 비용:</strong> 이 개선안 총 비용은 얼마고, 월간 얼마 절감되는가? (숫자 없으면 Red 재진행)</span></div>
+      <div class="sg-item"><span class="sg-num">2</span><span><strong>Q2 &middot; 일정:</strong> 언제 시작해서 언제 효과가 나오는가? 라인 정지 필요한가?</span></div>
+      <div class="sg-item"><span class="sg-num">3</span><span><strong>Q3 &middot; 책임:</strong> 이 결정은 내 권한인가. 생산팀장/공장장 결재가 필요한가?</span></div>
+      <div class="sg-item"><span class="sg-num">4</span><span><strong>Q4 &middot; 되돌림:</strong> 효과가 없으면 어디서 멈추고 어떻게 원복하는가?</span></div>
+      <div class="sg-item"><span class="sg-num">5</span><span><strong>Q5 &middot; 증거:</strong> 2~4주 뒤 무엇을 보면 '효과 있음/없음'을 알 수 있는가?</span></div>
+    </div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="module-section m3">
+    <div class="module-header">
+      <span class="module-badge">STEP 5</span>
+      <span class="module-title">최종 취사선택 &#x2014; 지적 반영/미반영을 이유와 함께 결정 (교안 p.79)</span>
+    </div>
+    <div class="ctx-box">STEP 4에서 나온 외부 관점 지적을 하나씩 판단합니다. 반영/미반영 어느 쪽이든 이유 1줄.</div>
+
+    <div style="font-size:13px;font-weight:700;margin-bottom:0.5rem">&#x2460; 반영/미반영 판단표</div>
+    <div class="data-box">
+      <table style="width:100%;font-size:12px;border-collapse:collapse">
+        <tr style="background:#F1F5F9"><th style="padding:0.4rem;text-align:left">지적 내용</th><th style="padding:0.4rem;width:50px">반영</th><th style="padding:0.4rem;width:50px">미반영</th><th style="padding:0.4rem;text-align:left">이유 1줄</th></tr>
+        <tr><td style="padding:0.4rem;border-top:1px solid #E2E0DB">재무: ROI 6개월 못 맞춤</td><td style="padding:0.4rem;border-top:1px solid #E2E0DB;text-align:center">&#x2610;</td><td style="padding:0.4rem;border-top:1px solid #E2E0DB;text-align:center">&#x2611;</td><td style="padding:0.4rem;border-top:1px solid #E2E0DB">약품 측정이 주 효과, 히터 교체는 별건 처리</td></tr>
+        <tr><td style="padding:0.4rem;border-top:1px solid #E2E0DB">현장: 야간조 측정 인원 부담</td><td style="padding:0.4rem;border-top:1px solid #E2E0DB;text-align:center">&#x2611;</td><td style="padding:0.4rem;border-top:1px solid #E2E0DB;text-align:center"></td><td style="padding:0.4rem;border-top:1px solid #E2E0DB">야간조 측정 항목 최소 3개로 축소</td></tr>
+        <tr><td style="padding:0.4rem;border-top:1px solid #E2E0DB">고객: 시행 초기 불량률 변동</td><td style="padding:0.4rem;border-top:1px solid #E2E0DB;text-align:center">&#x2611;</td><td style="padding:0.4rem;border-top:1px solid #E2E0DB;text-align:center"></td><td style="padding:0.4rem;border-top:1px solid #E2E0DB">2주 모니터링 플랜 추가, 고객 사전 공지</td></tr>
+        <tr><td style="padding:0.4rem;border-top:1px solid #E2E0DB">팀장: 되돌림 기준 없음</td><td style="padding:0.4rem;border-top:1px solid #E2E0DB;text-align:center">&#x2611;</td><td style="padding:0.4rem;border-top:1px solid #E2E0DB;text-align:center"></td><td style="padding:0.4rem;border-top:1px solid #E2E0DB">4주 시점 불량률 3.9% 미만이면 종료 조건</td></tr>
+      </table>
+    </div>
+
+    <div style="font-size:13px;font-weight:700;margin-bottom:0.5rem;margin-top:1rem">&#x2461; 조 권고안 최종본 &#x2014; 1장 양식 6가지 항목</div>
+    <div class="data-box" style="font-size:12px;line-height:1.8">
+      <strong>&#x2460; 제목</strong><br>
+      <strong>&#x2461; 근거 요약 3줄</strong> (현장 메모&middot;월별 요약 출처 명시)<br>
+      <strong>&#x2462; 반영한 레드 지적</strong> + 대응 방법<br>
+      <strong>&#x2463; 비가역성 판정</strong> (Q1~Q5 답변 요약)<br>
+      <strong>&#x2464; 트리거&middot;배제 조건</strong><br>
+      <strong>&#x2465; 월요일 과제 연결</strong>
+    </div>
+  </div>
+
+  <!-- 조별 실습 목록 -->
+  <div class="module-section" style="border-top:2px solid var(--border);padding-top:1.5rem">
+    <div style="font-size:1.05rem;font-weight:700;color:var(--amber);margin-bottom:0.8rem">&#x1F4CB; 팀장 역할이 필요한 실습 목록</div>
+    <div class="data-box" style="font-size:12.5px;line-height:1.9">
+      <strong>M3 조별 실습</strong> (90분) &#x2014; PHASE 4 팀장 레드팀 + PHASE 5 최종 합의<br>
+      <strong>M4 실습 10</strong> &#x2014; KPT &rarr; 개선제안서 (조별 STEP 4&middot;5)<br>
+      <span style="color:var(--muted);font-size:11.5px">나머지 개인 실습(1~9, 11~12)에서는 수강생이 STEP 1&middot;2&middot;3을 스스로 수행합니다.</span>
+    </div>
+  </div>
+</div><!-- /view-lead -->
+
+<!-- ══ 전체 VIEW ══ -->
+<div class="role-view" id="view-all">
+  <div class="role-header">
+    <div class="role-icon" style="background:#F1F5F9">&#x1F4CB;</div>
+    <div>
+      <div class="role-title">전체 보기</div>
+      <div class="role-desc">작성자 + 팀장 역할의 모든 프롬프트를 한눈에</div>
+    </div>
+  </div>
+  <div class="empty">
+    <div class="ei">&#x1F50E;</div>
+    <p>위 탭에서 &quot;작성자&quot; 또는 &quot;팀장&quot;을 선택하면 해당 역할의 프롬프트만 필터됩니다.<br>전체 보기에서는 두 역할의 내용이 모두 표시됩니다.</p>
+    <p style="margin-top:0.5rem;font-size:12px;color:#94A3B8">&#x2605; 실습 중에는 자기 역할 탭만 보는 것을 권장합니다.</p>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+/* ── Role switching ── */
+function switchRole(role, btn) {
+  document.querySelectorAll('.role-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sidebar .sb-item').forEach(i => i.classList.remove('active'));
+
+  if (role === 'indiv') {
+    document.getElementById('view-indiv').classList.add('active');
+  } else if (role === 'lead') {
+    document.getElementById('view-lead').classList.add('active');
+  } else {
+    document.getElementById('view-indiv').classList.add('active');
+    document.getElementById('view-lead').classList.add('active');
+  }
+
+  if (btn) {
+    btn.classList.add('active');
+  } else {
+    document.querySelectorAll('.role-tab').forEach(t => {
+      if ((role==='indiv' && t.classList.contains('indiv')) ||
+          (role==='lead' && t.classList.contains('lead')) ||
+          (role==='all' && !t.classList.contains('indiv') && !t.classList.contains('lead')))
+        t.classList.add('active');
+    });
+  }
+  // sidebar highlight
+  const items = document.querySelectorAll('.sidebar .sb-section:first-child .sb-item');
+  items.forEach((it, i) => {
+    it.classList.toggle('active', (role==='indiv' && i===0) || (role==='lead' && i===1) || (role==='all' && i===2));
+  });
+}
+
+/* ── Card toggle ── */
+function toggle(el) {
+  el.closest('.card').classList.toggle('open');
+}
+
+/* ── Copy to clipboard ── */
+function cp(btn) {
+  const box = btn.closest('.card-body, .persp-card, .chain-content, .module-section, div')
+               .querySelector('.prompt-box') ||
+               btn.parentElement.nextElementSibling;
+  if (!box) return;
+  const text = box.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '완료!';
+    btn.classList.add('done');
+    setTimeout(() => { btn.textContent = '복사'; btn.classList.remove('done'); }, 1500);
+  });
+}
+
+/* ── Better copy: find closest prompt-box after the button ── */
+document.addEventListener('click', function(e) {
+  if (!e.target.classList.contains('copy-btn')) return;
+  // find the next .prompt-box sibling
+  let el = e.target.closest('.prompt-label');
+  if (el && el.nextElementSibling && el.nextElementSibling.classList.contains('prompt-box')) {
+    const text = el.nextElementSibling.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      e.target.textContent = '완료!';
+      e.target.classList.add('done');
+      setTimeout(() => { e.target.textContent = '복사'; e.target.classList.remove('done'); }, 1500);
+    });
+    e.stopPropagation();
+  }
+});
+
+/* ── Smooth scroll for sidebar links ── */
+document.querySelectorAll('.sb-sub').forEach(a => {
+  a.addEventListener('click', function(e) {
+    const href = this.getAttribute('href');
+    if (href && href.startsWith('#')) {
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (!target.classList.contains('open')) {
+          target.classList.add('open');
+        }
+      }
+    }
+  });
+});
+</script>
+
+</body>
+</html>
