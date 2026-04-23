@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>B라인 도금공정 일일 점검 체크리스트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Oswald:wght@500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1B3A6B;
+    --navy-dark: #0F2447;
+    --amber: #D4820A;
+    --amber-light: #F5C97A;
+    --ok-green: #2E7D4F;
+    --warn-yellow: #E8A317;
+    --danger-red: #C62828;
+    --before-blue: #2563EB;
+    --during-amber: #D4820A;
+    --after-purple: #6D28D9;
+    --ink: #1A1A1A;
+    --gray-900: #1F2937;
+    --gray-700: #374151;
+    --gray-500: #6B7280;
+    --gray-300: #D1D5DB;
+    --gray-200: #E5E7EB;
+    --gray-100: #F3F4F6;
+    --gray-50:  #F9FAFB;
+    --paper: #FFFFFF;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--ink);
+    background: #E5E7EB;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.4;
+  }
+
+  .oswald { font-family: 'Oswald', sans-serif; letter-spacing: 0.04em; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ====== A4 Page ====== */
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 20px auto;
+    padding: 7mm 8mm 6mm;
+    background: var(--paper);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    position: relative;
+    overflow: hidden;
+  }
+  .page + .page { margin-top: 30px; }
+
+  /* ====== Header ====== */
+  .header {
+    border-top: 4px solid var(--navy);
+    border-bottom: 2px solid var(--navy);
+    padding: 8px 4px;
+    margin-bottom: 7px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .header-left h1 {
+    font-size: 19pt;
+    font-weight: 900;
+    color: var(--navy);
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .header-left .subtitle {
+    font-size: 8pt;
+    color: var(--gray-500);
+    margin-top: 3px;
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 0.1em;
+  }
+  .doc-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 8pt;
+    flex-shrink: 0;
+  }
+  .doc-meta .label {
+    color: var(--gray-500);
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 7pt;
+  }
+  .doc-meta .field {
+    border-bottom: 1px solid var(--gray-900);
+    min-width: 50px;
+    padding: 2px 4px;
+    font-weight: 500;
+  }
+
+  /* ====== Date strip ====== */
+  .date-strip {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 7px;
+    background: var(--gray-50);
+    border-left: 3px solid var(--amber);
+    padding: 5px 10px;
+  }
+  .date-item {
+    flex: 1;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 9pt;
+    min-width: 0;
+  }
+  .date-item .k {
+    font-family: 'Oswald', sans-serif;
+    font-size: 7.5pt;
+    color: var(--gray-500);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .date-item .v {
+    flex: 1;
+    border-bottom: 1px dashed var(--gray-500);
+    padding: 0 4px;
+    min-height: 14px;
+    font-weight: 500;
+  }
+
+  /* ====== Legend ====== */
+  .legend {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+    flex-wrap: nowrap;
+  }
+  .legend-item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 7.5pt;
+    padding: 3px 6px;
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    min-width: 0;
+  }
+  .legend-icon {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    font-size: 9pt;
+    flex-shrink: 0;
+  }
+  .legend-item .text-wrap { min-width: 0; }
+  .legend-item .text-kr { font-weight: 700; color: var(--gray-900); font-size: 7.5pt; }
+  .legend-item .text-en { color: var(--gray-500); font-family: 'Oswald', sans-serif; letter-spacing: 0.05em; font-size: 6pt; text-transform: uppercase; }
+
+  /* ====== Timeline strip ====== */
+  .timeline {
+    display: flex;
+    margin-bottom: 7px;
+    border: 1px solid var(--gray-300);
+    background: linear-gradient(90deg,
+      #EBF1FB 0%, #EBF1FB 33.3%,
+      #FCF1E1 33.3%, #FCF1E1 66.6%,
+      #F1EBFC 66.6%, #F1EBFC 100%);
+  }
+  .timeline-block {
+    flex: 1;
+    padding: 6px 10px;
+    position: relative;
+    border-right: 1px solid var(--gray-300);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .timeline-block:last-child { border-right: none; }
+  .timeline-block .icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 13pt;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .timeline-block .text-group { flex: 1; min-width: 0; }
+  .timeline-block .phase-num {
+    font-family: 'Oswald', sans-serif;
+    font-size: 7.5pt;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .timeline-block .phase-name {
+    font-size: 11pt;
+    font-weight: 900;
+    margin-top: 2px;
+    line-height: 1.1;
+  }
+  .timeline-block .phase-time {
+    font-size: 7pt;
+    color: var(--gray-500);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 1px;
+  }
+
+  /* ====== Section header ====== */
+  .section {
+    margin-bottom: 6px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 10px;
+    color: white;
+    position: relative;
+  }
+  .section-header.before  { background: var(--before-blue); }
+  .section-header.during  { background: var(--during-amber); }
+  .section-header.after   { background: var(--after-purple); }
+
+  .section-header .num {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 13pt;
+    background: rgba(255,255,255,0.25);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+  .section-header .info { flex: 1; }
+  .section-header .title-kr {
+    font-size: 12pt;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .section-header .title-en {
+    font-family: 'Oswald', sans-serif;
+    font-size: 7.5pt;
+    letter-spacing: 0.1em;
+    opacity: 0.8;
+    margin-top: 1px;
+  }
+  .section-header .freq {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 7.5pt;
+    line-height: 1.2;
+  }
+  .section-header .freq-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 7pt;
+    letter-spacing: 0.1em;
+    opacity: 0.8;
+  }
+  .section-header .freq-value {
+    font-size: 10pt;
+    font-weight: 700;
+  }
+
+  /* ====== Checklist Table ====== */
+  .check-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8pt;
+    table-layout: fixed;
+  }
+  .check-table thead th {
+    background: var(--gray-100);
+    padding: 4px 6px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 7.5pt;
+    border: 1px solid var(--gray-300);
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--gray-700);
+    vertical-align: middle;
+  }
+  .check-table thead th .th-kr {
+    display: block;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 8pt;
+    color: var(--ink);
+    letter-spacing: 0;
+    text-transform: none;
+    font-weight: 700;
+  }
+  .check-table tbody td {
+    padding: 3px 6px;
+    border: 1px solid var(--gray-300);
+    vertical-align: middle;
+    line-height: 1.25;
+  }
+
+  /* Column widths */
+  .col-num        { width: 22px; text-align: center; }
+  .col-item       { width: auto; }
+  .col-std        { width: 32%; }
+  .col-method     { width: 18%; }
+  .col-owner      { width: 52px; text-align: center; }
+  .col-check      { width: 56px; text-align: center; padding: 0 !important; }
+
+  /* Item cell */
+  .item-cell {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .item-icon {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    background: var(--gray-100);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12pt;
+  }
+  .item-text {
+    line-height: 1.25;
+  }
+  .item-text .kr { font-weight: 700; font-size: 8.5pt; }
+  .item-text .en {
+    font-family: 'Oswald', sans-serif;
+    font-size: 6.5pt;
+    color: var(--gray-500);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    display: block;
+  }
+
+  /* Criteria cell with colored chip */
+  .criteria {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 7.5pt;
+    font-weight: 700;
+    border: 1px solid;
+    white-space: nowrap;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .chip.ok       { background: #E8F5EC; color: var(--ok-green);     border-color: #C3E6CE; }
+  .chip.warn     { background: #FDF5E1; color: #9A6B0F;             border-color: #F2DFA5; }
+  .chip.danger   { background: #FDECEC; color: var(--danger-red);   border-color: #F5C6C6; }
+  .chip.neutral  { background: var(--gray-50); color: var(--gray-700); border-color: var(--gray-300); }
+  .chip.navy     { background: #E8EEF7; color: var(--navy);         border-color: #C5D1E6; }
+
+  /* Owner badge */
+  .owner-badge {
+    display: inline-block;
+    font-size: 7pt;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 0.04em;
+  }
+  .owner-badge.op { background: var(--navy); color: white; }
+  .owner-badge.ld { background: var(--amber); color: white; }
+
+  /* OK/NG check boxes */
+  .check-boxes {
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+    padding: 4px;
+    height: 100%;
+  }
+  .check-box {
+    flex: 1;
+    height: 22px;
+    border: 1.5px solid var(--gray-500);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 8pt;
+    letter-spacing: 0.05em;
+  }
+  .check-box.ok-label  { color: var(--ok-green); border-color: var(--ok-green); }
+  .check-box.ng-label  { color: var(--danger-red); border-color: var(--danger-red); }
+
+  /* Highlight critical row */
+  tr.critical td { background: #FEF3E0; }
+  tr.critical .item-icon { background: #D4820A; color: white; }
+
+  /* Pictograms using pure CSS/SVG */
+  .pict {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+  }
+
+  /* ====== Bottom action guide ====== */
+  .action-guide {
+    margin-top: 8px;
+    border: 2px solid var(--danger-red);
+    background: #FDF5F5;
+    padding: 6px 10px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .action-guide .badge {
+    background: var(--danger-red);
+    color: white;
+    padding: 4px 8px;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 10pt;
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+  .action-guide .content {
+    flex: 1;
+    font-size: 8pt;
+    line-height: 1.3;
+    min-width: 0;
+  }
+  .action-guide .content .title-line {
+    font-weight: 900;
+    color: var(--danger-red);
+    font-size: 8.5pt;
+    margin-bottom: 2px;
+  }
+  .action-guide .steps {
+    display: flex;
+    gap: 12px;
+    margin-top: 2px;
+    font-size: 7.5pt;
+    flex-wrap: wrap;
+  }
+  .action-guide .step {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .action-guide .step-num {
+    background: var(--danger-red);
+    color: white;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Oswald', sans-serif;
+    font-size: 8pt;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ====== Signature strip ====== */
+  .sign-strip {
+    margin-top: 8px;
+    display: flex;
+    gap: 14px;
+    padding-top: 6px;
+    border-top: 1px solid var(--gray-300);
+  }
+  .sign-box {
+    flex: 1;
+    font-size: 7.5pt;
+    min-width: 0;
+  }
+  .sign-box .label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 7pt;
+    letter-spacing: 0.1em;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .sign-box .row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .sign-box .row .name-label { flex-shrink: 0; color: var(--gray-700); font-size: 7.5pt; }
+  .sign-box .row .blank {
+    flex: 1;
+    border-bottom: 1px solid var(--gray-500);
+    min-height: 18px;
+  }
+  .sign-box .row .sig-blank {
+    flex: 0 0 80px;
+    border-bottom: 1px solid var(--gray-500);
+    min-height: 18px;
+  }
+
+  /* Footer meta */
+  .page-footer {
+    margin-top: 8px;
+    padding-top: 5px;
+    border-top: 1px solid var(--gray-300);
+    display: flex;
+    justify-content: space-between;
+    font-size: 7pt;
+    color: var(--gray-500);
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 0.08em;
+  }
+
+  /* ====== Decorative corner ====== */
+  .corner-brand {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 32px 32px 0 0;
+    border-color: var(--amber) transparent transparent transparent;
+  }
+  .corner-brand-text {
+    position: absolute;
+    top: 5px;
+    left: 4px;
+    color: white;
+    font-family: 'Oswald', sans-serif;
+    font-size: 7pt;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    transform: rotate(-45deg);
+    transform-origin: left top;
+  }
+
+  /* ====== Print optimization ====== */
+  @media print {
+    html, body { background: white; }
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0;
+      padding: 7mm 8mm 6mm;
+      box-shadow: none;
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: auto; }
+    .print-bar { display: none !important; }
+    @page { size: A4 portrait; margin: 0; }
+  }
+
+  /* ====== Print bar (screen only) ====== */
+  .print-bar {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--navy);
+    color: white;
+    padding: 10px 18px;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 700;
+    font-size: 11pt;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+    transition: transform 0.15s ease;
+  }
+  .print-bar:hover { transform: translateY(-2px); background: var(--navy-dark); }
+
+</style>
+</head>
+<body>
+
+<!-- ====== PAGE 1 ====== -->
+<div class="page">
+
+  <div class="corner-brand"></div>
+  <div class="corner-brand-text">B-LINE</div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>도금공정 일일 점검 체크리스트</h1>
+      <div class="subtitle">PLATING PROCESS · DAILY INSPECTION CHECKLIST · B-LINE</div>
+    </div>
+    <div class="doc-meta">
+      <div class="label">DOC</div>
+      <div class="field mono" style="min-width: 90px;">CHK-PL-B-001</div>
+      <div class="label">REV</div>
+      <div class="field mono" style="min-width: 30px;">0</div>
+    </div>
+  </div>
+
+  <!-- Date/Crew strip -->
+  <div class="date-strip">
+    <div class="date-item">
+      <span class="k">날짜 · DATE</span>
+      <span class="v"></span>
+    </div>
+    <div class="date-item">
+      <span class="k">근무 · SHIFT</span>
+      <span class="v"></span>
+    </div>
+    <div class="date-item">
+      <span class="k">라인리더 · LEADER</span>
+      <span class="v"></span>
+    </div>
+    <div class="date-item">
+      <span class="k">작업자 · OPERATOR</span>
+      <span class="v"></span>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item">
+      <span class="legend-icon" style="background: var(--ok-green);">✓</span>
+      <div class="text-wrap"><div class="text-kr">정상</div><div class="text-en">OK · PASS</div></div>
+    </div>
+    <div class="legend-item">
+      <span class="legend-icon" style="background: var(--danger-red);">✕</span>
+      <div class="text-wrap"><div class="text-kr">이상</div><div class="text-en">NG · STOP</div></div>
+    </div>
+    <div class="legend-item">
+      <span class="legend-icon" style="background: var(--navy);">OP</span>
+      <div class="text-wrap"><div class="text-kr">작업자</div><div class="text-en">OPERATOR</div></div>
+    </div>
+    <div class="legend-item">
+      <span class="legend-icon" style="background: var(--amber);">LD</span>
+      <div class="text-wrap"><div class="text-kr">라인리더</div><div class="text-en">LINE LEADER</div></div>
+    </div>
+    <div class="legend-item">
+      <span class="legend-icon" style="background: #FEF3E0; color: var(--amber); border: 1px solid var(--amber);">!</span>
+      <div class="text-wrap"><div class="text-kr">중요</div><div class="text-en">CRITICAL</div></div>
+    </div>
+  </div>
+
+  <!-- Day timeline visualization -->
+  <div class="timeline">
+    <div class="timeline-block">
+      <div class="icon" style="background: var(--before-blue);">🌅</div>
+      <div class="text-group">
+        <div class="phase-num" style="color: var(--before-blue);">PHASE 1</div>
+        <div class="phase-name" style="color: var(--before-blue);">시작 전 점검</div>
+        <div class="phase-time">작업 시작 30분 전</div>
+      </div>
+    </div>
+    <div class="timeline-block">
+      <div class="icon" style="background: var(--during-amber);">⚙️</div>
+      <div class="text-group">
+        <div class="phase-num" style="color: var(--during-amber);">PHASE 2</div>
+        <div class="phase-name" style="color: var(--during-amber);">작업 중 점검</div>
+        <div class="phase-time">2시간 간격 · 수시</div>
+      </div>
+    </div>
+    <div class="timeline-block">
+      <div class="icon" style="background: var(--after-purple);">🏁</div>
+      <div class="text-group">
+        <div class="phase-num" style="color: var(--after-purple);">PHASE 3</div>
+        <div class="phase-name" style="color: var(--after-purple);">종료 후 점검</div>
+        <div class="phase-time">교대 · 퇴근 전</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SECTION 1: BEFORE ====== -->
+  <div class="section">
+    <div class="section-header before">
+      <div class="num">1</div>
+      <div class="info">
+        <div class="title-kr">🌅 시작 전 점검 · BEFORE WORK</div>
+        <div class="title-en">Pre-Start Inspection</div>
+      </div>
+      <div class="freq">
+        <div class="freq-label">FREQUENCY</div>
+        <div class="freq-value">1회 / 근무 시작 시</div>
+      </div>
+    </div>
+
+    <table class="check-table">
+      <thead>
+        <tr>
+          <th class="col-num">#</th>
+          <th class="col-item">점검 항목<span class="th-kr"></span></th>
+          <th class="col-std">판정 기준 · CRITERIA</th>
+          <th class="col-method">점검 방법 · METHOD</th>
+          <th class="col-owner">담당 · OWN</th>
+          <th class="col-check">OK / NG</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr class="critical">
+          <td class="col-num mono">1</td>
+          <td>
+            <div class="item-cell">
+              <div class="item-icon">🌡️</div>
+              <div class="item-text">
+                <div class="kr">도금조 온도</div>
+                <span class="en">Bath Temperature</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="criteria">
+              <span class="chip ok">니켈 48~52℃</span>
+              <span class="chip ok">금 62~68℃</span>
+              <span class="chip danger">범위 外 = 중지</span>
+            </div>
+          </td>
+          <td>디지털 온도계 · Display 확인</td>
+          <td><span class="owner-badge op">OP</span></td>
+          <td>
+            <div class="check-boxes">
+              <div class="check-box ok-label">OK</div>
+              <div class="check-box ng-label">NG</div>
+            </div>
+          </td>
+        </tr>
+
+        <tr class="critical">
+          <td class="col-num mono">2</td>
+          <td>
+            <div class="item-cell">
+              <div class="item-icon">🧪</div>
+              <div class="item-text">
+                <div class="kr">니켈 농도 측정</div>
+                <span class="en">Nickel Concentration (Daily)</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="criteria">
+              <span class="chip ok">관리 범위 内</span>
+              <span class="chip warn">이탈시 보정 요청</span>
+            </div>
+          </td>
+          <td>농도 측정 키트</td>
+          <td><span class="owner-badge ld">LD</span></td>
+          <td>
+            <div class="check-boxes">
+              <div class="check-box ok-label">OK</div>
+              <div class="check-box ng-label">NG</div>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="col-num mono">3</td>
+          <td>
+            <div class="item-cell">
+              <div class="item-icon">💧</div>
+              <div class="item-text">
+                <div class="kr">수세수 상태</div>
+                <span class="en">Rinse Water Quality</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="criteria">
+              <span class="chip ok">투명·무취</span>
+              <span class="chip danger">탁함 = 교체</span>
+            </div>
+          </td>
+          <td>육안 확인</td>
+          <td><span class="owner-badge op">OP</span></td>
+          <td>
+            <div class="check-boxes">
+              <div class="check-box ok-label">OK</div>
+              <div class="check-box ng-label">NG</div>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="col-num mono">4</td>
+          <td>
+            <div class="item-cell">
+              <div class="item-icon">🔍</div>
+              <div class="item-text">
+                <div class="kr">투입 전 제품 상태</div>
+                <span class="en">Incoming Part Condition</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="criteria">
+              <span class="chip ok">스크래치·변형 無</span>
+              <span class="chip danger">이상품 투입 금지</span>
+            </div>
+          </td>
+          <td>육안 · 샘플 추출 확인</td>
+          <td><span class="owner-badge op">OP</span></td>
+          <td>
+            <div class="check-boxes">
+              <div class="check-box ok-label">OK</div>
+              <div class="check-box ng-label">NG</div>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="col-num mono">5</td>
+          <td>
+            <div class="item-cell">
+              <div class="item-icon">🦺</div>
+              <div class="item-text">
+                <div class="kr">안전 장비 착용</div>
+                <span class="en">PPE Check</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="criteria">
+              <span class="chip ok">보안경</span>
+              <span class="chip ok">내화학 장갑</span>
+              <span class="chip ok">앞치마</span>
+            </div>
+          </td>
+          <td>상호 확인 (Buddy Check)</td>
+          <td><span class="owner-badge ld">LD</span></td>
+          <td>
+            <div class="check-boxes">
+              <div class="check-box ok-label">OK</div>
+              <div class="check-box ng-label">NG</div>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="col-num mono">6</td>
+          <td>
+            <div class="item-cell">
+              <div class="item-icon">⚠️</div>
+              <div class="item-text">
+                <div class="kr">도금조 주변 누액</div>
+                <span class="en">Leak / Spill Around Bath</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="criteria">
+              <span class="chip ok">누액 無</span>
+              <span class="chip danger">누액 시 즉시 대응</span>
+            </div>
+          </td>
+          <td>바닥·외벽 육안</td>
+          <td><span class="owner-badge op">OP</span></td>
+          <td>
+            <div class="check-boxes">
+              <div class="check-box ok-label">OK</div>
+              <div class="check-box ng-label">NG</div>
+            </div>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ====== SECTION 2: DURING ====== -->
+  <div class="section">
+    <div class="section-header during">
+      <div class="num">2</div>
+      <div class="info">
+        <div class="title-kr">⚙️ 작업 중 점검 · DURING WORK</div>
+        <div class="title-en">In-Process Inspection</div>
+      </div>
+      <div class="freq">
+        <div class="freq-label">FREQUENCY</div>
+        <div class="freq-value">2시간 간격 · 수시</div>
+      </div>
+    </div>
+
+    <table class="check-table">
+      <thead>
+        <tr>
+          <th class="col-num">#</th>
+          <th class="col-item">점검 항목</th>
+          <th class="col-std">판정 기준 · CRITERIA</th>
+          <th class="col-method">점검 방법 · METHOD</th>
+          <th class="col-owner">담당 · OWN</th>
+          <th class="col-check">
+            <div style="display: flex; gap: 2px; justify-content: center; font-size: 7pt;">
+              <div style="flex: 1;">①</div><div style="flex: 1;">②</div><div style="flex: 1;">③</div><div style="flex: 1;">④</div>
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr class="critical">
+          <td class="col-num mono">1</td>
+          <td>
+            <div class="item-cell">
+              <div class="item-icon">🌡️</div>
+              <div class="item-text">
+                <div class="kr">금도금 온도 유지</div>
+                <span class="en">Gold Bath Temp (Critical)</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="criteria">
+              <span class="chip ok">62~68℃</span>
+              <span class="chip danger">이탈 시 즉시 조정</span>
+            </div>
+          </td>
+          <td>온도계 기록</td>
+          <td><span class="owner-badge op">OP</span></td>
+          <td>
+            <div class="check-boxes" style="gap: 2px;">
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="col-num mono">2</td>
+          <td>
+            <div class="item-cell">
+              <div class="item-icon">⏱️</div>
+              <div class="item-text">
+                <div class="kr">침지 시간 준수</div>
+                <span class="en">Dipping Time Control</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="criteria">
+              <span class="chip ok">표준 시간 ±5%</span>
+              <span class="chip warn">초과 = 표면 손상</span>
+            </div>
+          </td>
+          <td>타이머 관찰</td>
+          <td><span class="owner-badge op">OP</span></td>
+          <td>
+            <div class="check-boxes" style="gap: 2px;">
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="col-num mono">3</td>
+          <td>
+            <div class="item-cell">
+              <div class="item-icon">🚿</div>
+              <div class="item-text">
+                <div class="kr">수세 충분성</div>
+                <span class="en">Rinse Adequacy</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="criteria">
+              <span class="chip ok">잔류액 無·얼룩 無</span>
+            </div>
+          </td>
+          <td>샘플 육안 확인</td>
+          <td><span class="owner-badge op">OP</span></td>
+          <td>
+            <div class="check-boxes" style="gap: 2px;">
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="col-num mono">4</td>
+          <td>
+            <div class="item-cell">
+              <div class="item-icon">♨️</div>
+              <div class="item-text">
+                <div class="kr">건조 상태</div>
+                <span class="en">Drying Completeness</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="criteria">
+              <span class="chip ok">완전 건조</span>
+              <span class="chip danger">물기 = 외관 불량</span>
+            </div>
+          </td>
+          <td>촉감 · 육안 확인</td>
+          <td><span class="owner-badge op">OP</span></td>
+          <td>
+            <div class="check-boxes" style="gap: 2px;">
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="col-num mono">5</td>
+          <td>
+            <div class="item-cell">
+              <div class="item-icon">👁️</div>
+              <div class="item-text">
+                <div class="kr">외관 샘플 검사</div>
+                <span class="en">Visual Sample Check</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="criteria">
+              <span class="chip ok">색·광택 균일</span>
+              <span class="chip danger">이물·얼룩 無</span>
+            </div>
+          </td>
+          <td>외관 기준서 대조</td>
+          <td><span class="owner-badge ld">LD</span></td>
+          <td>
+            <div class="check-boxes" style="gap: 2px;">
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+            </div>
+          </td>
+        </tr>
+
+        <tr class="critical">
+          <td class="col-num mono">6</td>
+          <td>
+            <div class="item-cell">
+              <div class="item-icon">🚨</div>
+              <div class="item-text">
+                <div class="kr">불량 발생 여부</div>
+                <span class="en">Defect Occurrence</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="criteria">
+              <span class="chip ok">불량 無</span>
+              <span class="chip danger">발생 시 라인 정지</span>
+            </div>
+          </td>
+          <td>누적 관찰 · 보고</td>
+          <td><span class="owner-badge ld">LD</span></td>
+          <td>
+            <div class="check-boxes" style="gap: 2px;">
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+              <div class="check-box" style="font-size: 7pt; padding: 0;"></div>
+            </div>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+    <div style="font-size: 7pt; color: var(--gray-500); margin-top: 3px; padding-left: 4px; font-family: 'JetBrains Mono', monospace;">
+      ① 10:00  ·  ② 12:00  ·  ③ 14:00  ·  ④ 16:00  &nbsp;&nbsp;(시간 기준 · 실 점검 시각 하단 서명란에 기록)
+    </div>
+  </div>
+
+  <!-- ====== SECTION 3: AFTER ====== -->
+  <div class="section">
+    <div class="section-header after">
+      <div class="num">3</div>
+      <div class="info">
+        <div class="title-kr">🏁 종료 후 점검 · AFTER WORK</div>
+        <div class="title-en">Post-Shift Inspection</div>
+      </div>
+      <div class="freq">
+        <div class="freq-label">FREQUENCY</div>
+        <div class="freq-value">1회 / 근무 종료 시</div>
+      </div>
+    </div>
+
+    <table class="check-table">
+      <thead>
+        <tr>
+          <th class="col-num">#</th>
+          <th class="col-item">점검 항목</th>
+          <th class="col-std">판정 기준 · CRITERIA</th>
+          <th class="col-method">점검 방법 · METHOD</th>
+          <th class="col-owner">담당 · OWN</th>
+          <th class="col-check">OK / NG</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td class="col-num mono">1</td>
+          <td>
+            <div class="item-cell">
+              <div class="item-icon">🧹</div>
+              <div class="item-text">
+                <div class="kr">도금조 주변 정리</div>
+                <span class="en">Bath Area Cleanup</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="criteria">
+              <span class="chip ok">이물 無</span>
+              <span class="chip ok">기구 정위치</span>
+            </div>
+          </td>
+          <td>작업대 · 주변 확인</td>
+          <td><span class="owner-badge op">OP</span></td>
+          <td>
+            <div class="check-boxes">
+              <div class="check-box ok-label">OK</div>
+              <div class="check-box ng-label">NG</div>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="col-num mono">2</td>
+          <td>
+            <div class="item-cell">
+              <div class="item-icon">🧽</div>
+              <div class="item-text">
+                <div class="kr">바닥 청소 · 누액 제거</div>
+                <span class="en">Floor Clean / Spill Removed</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="criteria">
+              <span class="chip ok">건조 · 청결 유지</span>
+            </div>
+          </td>
+          <td>바닥 전수 확인</td>
+          <td><span class="owner-badge op">OP</span></td>
+          <td>
+            <div class="check-boxes">
+              <div class="check-box ok-label">OK</div>
+              <div class="check-box ng-label">NG</div>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="col-num mono">3</td>
+          <td>
+            <div class="item-cell">
+              <div class="item-icon">📋</div>
+              <div class="item-text">
+                <div class="kr">설비 상태 기록</div>
+                <span class="en">Equipment Status Log</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="criteria">
+              <span class="chip neutral">온도 · 농도 최종값</span>
+              <span class="chip neutral">가동시간 · 이상여부</span>
+            </div>
+          </td>
+          <td>점검 일지 기입</td>
+          <td><span class="owner-badge ld">LD</span></td>
+          <td>
+            <div class="check-boxes">
+              <div class="check-box ok-label">OK</div>
+              <div class="check-box ng-label">NG</div>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="col-num mono">4</td>
+          <td>
+            <div class="item-cell">
+              <div class="item-icon">⚠️</div>
+              <div class="item-text">
+                <div class="kr">이상 사항 기록</div>
+                <span class="en">Abnormality Record</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="criteria">
+              <span class="chip ok">이상 無</span>
+              <span class="chip warn">발생 시 상세 기록</span>
+            </div>
+          </td>
+          <td>비고란 기입</td>
+          <td><span class="owner-badge ld">LD</span></td>
+          <td>
+            <div class="check-boxes">
+              <div class="check-box ok-label">OK</div>
+              <div class="check-box ng-label">NG</div>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="col-num mono">5</td>
+          <td>
+            <div class="item-cell">
+              <div class="item-icon">🔁</div>
+              <div class="item-text">
+                <div class="kr">다음 근무자 인수인계</div>
+                <span class="en">Shift Handover</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="criteria">
+              <span class="chip navy">대면 전달 · 서명</span>
+            </div>
+          </td>
+          <td>인수인계서 서명</td>
+          <td><span class="owner-badge ld">LD</span></td>
+          <td>
+            <div class="check-boxes">
+              <div class="check-box ok-label">OK</div>
+              <div class="check-box ng-label">NG</div>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="col-num mono">6</td>
+          <td>
+            <div class="item-cell">
+              <div class="item-icon">📅</div>
+              <div class="item-text">
+                <div class="kr">수세수 교체 <span style="color: var(--amber); font-weight: 700; font-size: 7pt;">(매주 月)</span></div>
+                <span class="en">Weekly Rinse Water Change (Mon)</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="criteria">
+              <span class="chip ok">월요일 교체 완료</span>
+              <span class="chip neutral">타 요일 = 해당없음</span>
+            </div>
+          </td>
+          <td>교체 일지 확인</td>
+          <td><span class="owner-badge ld">LD</span></td>
+          <td>
+            <div class="check-boxes">
+              <div class="check-box ok-label">OK</div>
+              <div class="check-box ng-label">N/A</div>
+            </div>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Action guide: what to do when NG -->
+  <div class="action-guide">
+    <div class="badge">
+      <span style="font-size: 14pt;">⚠</span> NG
+    </div>
+    <div class="content">
+      <div class="title-line">NG 판정 시 조치 흐름 · ACTION WHEN NG</div>
+      <div class="steps">
+        <div class="step"><span class="step-num">1</span><span><b>즉시 라인 정지</b> · Stop the line</span></div>
+        <div class="step"><span class="step-num">2</span><span><b>라인리더 호출</b> · Call the leader</span></div>
+        <div class="step"><span class="step-num">3</span><span><b>해당 제품 별도 보관</b> · Segregate parts</span></div>
+        <div class="step"><span class="step-num">4</span><span><b>원인 확인 후 재가동</b> · Restart after root-cause</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Signature strip -->
+  <div class="sign-strip">
+    <div class="sign-box">
+      <div class="label">작업자 서명 · OPERATOR</div>
+      <div class="row">
+        <div class="name-label">성명</div><div class="blank"></div><div class="sig-blank"></div>
+      </div>
+    </div>
+    <div class="sign-box">
+      <div class="label">라인리더 서명 · LINE LEADER</div>
+      <div class="row">
+        <div class="name-label">성명</div><div class="blank"></div><div class="sig-blank"></div>
+      </div>
+    </div>
+    <div class="sign-box">
+      <div class="label">팀장 확인 · TEAM LEAD APPROVAL</div>
+      <div class="row">
+        <div class="name-label">성명</div><div class="blank"></div><div class="sig-blank"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>CHK-PL-B-001 · REV.0 · DAILY INSPECTION</span>
+    <span>PAGE 1 / 1</span>
+    <span>KEEP 1 YEAR · 보관 1년</span>
+  </div>
+
+</div>
+
+<button class="print-bar" onclick="window.print()">
+  <span style="font-size: 14pt;">🖨️</span>
+  <span>인쇄하기 · Print</span>
+</button>
+
+</body>
+</html>
