@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KPI 트리거 설계 · 팀 프로젝트 평가 결과</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,700;9..144,900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --navy: #1B3A6B;
+    --navy-deep: #0F2442;
+    --amber: #D4820A;
+    --amber-light: #F2C464;
+    --cream: #FAF7F2;
+    --paper: #F4EFE6;
+    --ink: #1A1A1A;
+    --muted: #6B6B6B;
+    --line: #D8D2C4;
+
+    --c-why: #7A8B9E;
+    --c-dim: #7D4A8C;
+    --c-how: #3E7C5F;
+    --c-sys: #D4820A;
+    --c-what: #B8442E;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    line-height: 1.6;
+    font-weight: 400;
+    font-feature-settings: "ss03", "ss04";
+  }
+
+  .serif { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ━━━━━━━━━ GRAIN OVERLAY ━━━━━━━━━ */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+    opacity: 0.06;
+    z-index: 100;
+    mix-blend-mode: multiply;
+  }
+
+  /* ━━━━━━━━━ HEADER ━━━━━━━━━ */
+  header {
+    background: var(--navy-deep);
+    color: var(--cream);
+    padding: 3rem 2rem 4rem;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 8px solid var(--amber);
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    right: -80px; top: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(212,130,10,0.15), transparent 70%);
+    border-radius: 50%;
+  }
+
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--amber-light);
+    margin-bottom: 1.8rem;
+    font-weight: 500;
+  }
+
+  .eyebrow::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--amber-light);
+  }
+
+  h1.title {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: clamp(2.4rem, 5.5vw, 4.4rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.2rem;
+  }
+
+  h1.title em {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--amber-light);
+  }
+
+  .subtitle {
+    font-size: 1.05rem;
+    max-width: 640px;
+    color: rgba(250, 247, 242, 0.75);
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  .header-meta {
+    display: flex;
+    gap: 2.5rem;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(250, 247, 242, 0.15);
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .meta-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(250, 247, 242, 0.5);
+  }
+
+  .meta-value {
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--cream);
+  }
+
+  /* ━━━━━━━━━ SECTIONS ━━━━━━━━━ */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+  }
+
+  section { margin-bottom: 5rem; }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 1rem;
+  }
+
+  .section-num {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--amber);
+    font-weight: 500;
+  }
+
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--navy-deep);
+  }
+
+  .section-desc {
+    margin-left: auto;
+    font-size: 0.9rem;
+    color: var(--muted);
+    max-width: 320px;
+    text-align: right;
+  }
+
+  /* ━━━━━━━━━ LEADERBOARD ━━━━━━━━━ */
+  .leaderboard {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .lb-card {
+    background: white;
+    border: 1px solid var(--line);
+    padding: 1.8rem;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    min-height: 240px;
+  }
+
+  .lb-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(27, 58, 107, 0.12);
+  }
+
+  .lb-card.winner {
+    background: linear-gradient(135deg, var(--navy-deep), var(--navy));
+    color: var(--cream);
+    grid-row: span 2;
+    border-color: var(--amber);
+    border-width: 2px;
+    min-height: auto;
+  }
+
+  .lb-card.winner::before {
+    content: '1ST';
+    position: absolute;
+    top: 1.2rem; right: 1.4rem;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 500;
+    color: var(--amber-light);
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+  }
+
+  .lb-rank {
+    font-family: 'Fraunces', serif;
+    font-size: 5rem;
+    font-weight: 300;
+    line-height: 1;
+    color: var(--navy-deep);
+    margin-bottom: 0.5rem;
+  }
+
+  .lb-card.winner .lb-rank {
+    color: var(--amber-light);
+    font-size: 8rem;
+    font-weight: 200;
+  }
+
+  .lb-team {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+  }
+
+  .lb-card.winner .lb-team {
+    color: var(--amber-light);
+  }
+
+  .lb-name {
+    font-family: 'Fraunces', serif;
+    font-size: 1.4rem;
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+    letter-spacing: -0.01em;
+  }
+
+  .lb-card.winner .lb-name {
+    font-size: 2.2rem;
+    margin-bottom: 1rem;
+  }
+
+  .lb-type {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 1rem;
+  }
+
+  .lb-card.winner .lb-type {
+    color: rgba(250, 247, 242, 0.7);
+    font-size: 1rem;
+  }
+
+  .lb-score {
+    margin-top: auto;
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+
+  .lb-score-big {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--navy-deep);
+    letter-spacing: -0.02em;
+  }
+
+  .lb-card.winner .lb-score-big {
+    color: var(--amber-light);
+    font-size: 3.4rem;
+  }
+
+  .lb-score-total {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    color: var(--muted);
+  }
+
+  .lb-card.winner .lb-score-total {
+    color: rgba(250, 247, 242, 0.5);
+  }
+
+  .lb-strength {
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+    border-top: 1px dashed var(--line);
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .lb-card.winner .lb-strength {
+    border-top-color: rgba(250, 247, 242, 0.2);
+    color: rgba(250, 247, 242, 0.8);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  /* Type color bars */
+  .type-bar {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 5px;
+  }
+  .type-why { background: var(--c-why); }
+  .type-dim { background: var(--c-dim); }
+  .type-how { background: var(--c-how); }
+  .type-sys { background: var(--c-sys); }
+  .type-what { background: var(--c-what); }
+
+  /* ━━━━━━━━━ RUBRIC ━━━━━━━━━ */
+  .rubric-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+  }
+
+  .rubric-card {
+    background: white;
+    border: 1px solid var(--line);
+    padding: 1.5rem;
+    position: relative;
+  }
+
+  .rubric-num {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--amber);
+    margin-bottom: 0.6rem;
+  }
+
+  .rubric-title {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.6rem;
+    color: var(--navy-deep);
+  }
+
+  .rubric-desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.55;
+    margin-bottom: 1rem;
+  }
+
+  .rubric-points {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--amber);
+    padding-top: 0.8rem;
+    border-top: 1px dashed var(--line);
+    letter-spacing: 0.05em;
+  }
+
+  /* ━━━━━━━━━ TEAM TABS ━━━━━━━━━ */
+  .tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--line);
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    padding: 1rem 1.5rem;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    letter-spacing: 0.02em;
+  }
+
+  .tab:hover { color: var(--navy-deep); }
+
+  .tab.active {
+    color: var(--navy-deep);
+    border-bottom-color: var(--amber);
+  }
+
+  .tab-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  .tab-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  .tab.active .tab-score { color: var(--amber); }
+
+  /* ━━━━━━━━━ TEAM CONTENT ━━━━━━━━━ */
+  .team-panel { display: none; }
+  .team-panel.active { display: block; animation: fadeIn 0.4s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .team-hero {
+    background: white;
+    border: 1px solid var(--line);
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .team-hero::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 6px;
+  }
+  .team-hero.t-why::before { background: var(--c-why); }
+  .team-hero.t-dim::before { background: var(--c-dim); }
+  .team-hero.t-how::before { background: var(--c-how); }
+  .team-hero.t-sys::before { background: var(--c-sys); }
+  .team-hero.t-what::before { background: var(--c-what); }
+
+  .team-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .team-badge {
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--amber);
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+  }
+
+  .team-name {
+    font-family: 'Fraunces', serif;
+    font-size: 2.8rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    color: var(--navy-deep);
+    margin-bottom: 0.6rem;
+  }
+
+  .team-type {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+
+  .team-total {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed var(--line);
+  }
+
+  .team-total-num {
+    font-family: 'Fraunces', serif;
+    font-size: 4.5rem;
+    font-weight: 300;
+    line-height: 1;
+    color: var(--navy-deep);
+    letter-spacing: -0.03em;
+  }
+
+  .team-total-denom {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    color: var(--muted);
+  }
+
+  .team-total-label {
+    margin-left: auto;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* Score bars */
+  .scores {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+
+  .score-row {
+    display: grid;
+    grid-template-columns: 2fr 3fr auto;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .score-name {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--navy-deep);
+  }
+
+  .score-bar {
+    height: 8px;
+    background: var(--paper);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .score-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--navy), var(--amber));
+    border-radius: 4px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .score-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--navy-deep);
+    min-width: 40px;
+    text-align: right;
+  }
+
+  /* ━━━━━━━━━ FEEDBACK ━━━━━━━━━ */
+  .feedback-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .feedback-block {
+    background: white;
+    border: 1px solid var(--line);
+    padding: 1.8rem;
+    position: relative;
+  }
+
+  .feedback-block.strengths {
+    border-left: 4px solid var(--c-how);
+  }
+
+  .feedback-block.improvements {
+    border-left: 4px solid var(--c-what);
+  }
+
+  .feedback-head {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px dashed var(--line);
+  }
+
+  .feedback-icon {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    color: white;
+    font-size: 0.9rem;
+  }
+
+  .strengths .feedback-icon { background: var(--c-how); }
+  .improvements .feedback-icon { background: var(--c-what); }
+
+  .feedback-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--navy-deep);
+  }
+
+  .feedback-item {
+    margin-bottom: 1.2rem;
+    padding-left: 1rem;
+    border-left: 2px solid var(--line);
+  }
+
+  .feedback-item:last-child { margin-bottom: 0; }
+
+  .feedback-item h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--navy-deep);
+    margin-bottom: 0.4rem;
+    line-height: 1.4;
+  }
+
+  .feedback-item p {
+    font-size: 0.87rem;
+    color: #4a4a4a;
+    line-height: 1.65;
+  }
+
+  .feedback-item p em {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--amber);
+    font-weight: 500;
+  }
+
+  .feedback-item p strong {
+    background: linear-gradient(180deg, transparent 60%, rgba(212,130,10,0.2) 60%);
+    font-weight: 700;
+    color: var(--navy-deep);
+  }
+
+  /* Summary */
+  .team-summary {
+    background: var(--navy-deep);
+    color: var(--cream);
+    padding: 2rem 2.5rem;
+    position: relative;
+  }
+
+  .team-summary::before {
+    content: '"';
+    position: absolute;
+    left: 1rem; top: -0.5rem;
+    font-family: 'Fraunces', serif;
+    font-size: 6rem;
+    line-height: 1;
+    color: var(--amber);
+    opacity: 0.6;
+  }
+
+  .team-summary-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--amber-light);
+    margin-bottom: 0.8rem;
+    padding-left: 3rem;
+  }
+
+  .team-summary p {
+    font-family: 'Fraunces', serif;
+    font-size: 1.15rem;
+    font-weight: 300;
+    line-height: 1.6;
+    padding-left: 3rem;
+    font-style: italic;
+  }
+
+  .team-summary p strong {
+    font-style: normal;
+    font-weight: 500;
+    color: var(--amber-light);
+  }
+
+  /* ━━━━━━━━━ SYNTHESIS ━━━━━━━━━ */
+  .synthesis {
+    background: linear-gradient(135deg, var(--paper), var(--cream));
+    padding: 3rem;
+    border: 1px solid var(--line);
+    position: relative;
+  }
+
+  .synth-intro {
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+    font-weight: 300;
+    line-height: 1.5;
+    max-width: 780px;
+    margin: 0 auto 3rem;
+    text-align: center;
+    color: var(--navy-deep);
+    font-style: italic;
+  }
+
+  .synth-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    border: 1px solid var(--line);
+    background: white;
+  }
+
+  .synth-card {
+    padding: 1.5rem;
+    text-align: center;
+    border-right: 1px solid var(--line);
+    position: relative;
+  }
+
+  .synth-card:last-child { border-right: none; }
+
+  .synth-card::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 4px;
+  }
+
+  .synth-card.s-why::before { background: var(--c-why); }
+  .synth-card.s-dim::before { background: var(--c-dim); }
+  .synth-card.s-how::before { background: var(--c-how); }
+  .synth-card.s-sys::before { background: var(--c-sys); }
+  .synth-card.s-what::before { background: var(--c-what); }
+
+  .synth-perspective {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.8rem;
+    color: var(--navy-deep);
+    letter-spacing: -0.01em;
+    margin-bottom: 0.3rem;
+  }
+
+  .synth-perspective-kr {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+  }
+
+  .synth-team-label {
+    font-size: 0.7rem;
+    color: var(--amber);
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    margin-bottom: 0.6rem;
+  }
+
+  .synth-question {
+    font-size: 0.85rem;
+    color: #4a4a4a;
+    line-height: 1.55;
+  }
+
+  .synth-conclusion {
+    margin-top: 2.5rem;
+    padding: 2rem;
+    background: var(--navy-deep);
+    color: var(--cream);
+    text-align: center;
+  }
+
+  .synth-conclusion-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--amber-light);
+    margin-bottom: 1rem;
+  }
+
+  .synth-conclusion-text {
+    font-family: 'Fraunces', serif;
+    font-size: 1.5rem;
+    font-weight: 300;
+    line-height: 1.5;
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  .synth-conclusion-text strong {
+    font-weight: 500;
+    color: var(--amber-light);
+  }
+
+  /* ━━━━━━━━━ FOOTER ━━━━━━━━━ */
+  footer {
+    background: var(--navy-deep);
+    color: rgba(250,247,242,0.7);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    border-top: 4px solid var(--amber);
+  }
+
+  footer p + p { margin-top: 0.5rem; opacity: 0.6; font-size: 0.75rem; }
+
+  /* ━━━━━━━━━ RESPONSIVE ━━━━━━━━━ */
+  @media (max-width: 900px) {
+    .leaderboard { grid-template-columns: 1fr 1fr; }
+    .lb-card.winner { grid-column: span 2; grid-row: auto; }
+    .rubric-grid { grid-template-columns: repeat(2, 1fr); }
+    .team-hero { grid-template-columns: 1fr; gap: 2rem; }
+    .feedback-grid { grid-template-columns: 1fr; }
+    .synth-grid { grid-template-columns: 1fr; }
+    .synth-card { border-right: none; border-bottom: 1px solid var(--line); }
+    .section-head { flex-direction: column; align-items: flex-start; }
+    .section-desc { margin-left: 0; text-align: left; }
+  }
+
+  @media (max-width: 600px) {
+    .leaderboard { grid-template-columns: 1fr; }
+    .lb-card.winner { grid-column: auto; }
+    .rubric-grid { grid-template-columns: 1fr; }
+    main { padding: 3rem 1.2rem; }
+    header { padding: 2.5rem 1.5rem 3rem; }
+    .team-hero { padding: 1.8rem; }
+    .feedback-block { padding: 1.4rem; }
+    .tab { padding: 0.8rem 1rem; font-size: 0.85rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="eyebrow">풍산 · 경주 · 2026.04.23–24</div>
+    <h1 class="title serif">KPI 트리거 설계<br><em>팀 프로젝트 평가</em></h1>
+    <p class="subtitle">
+      "어느 선을 넘었는가"에 따라 움직임이 달라진다 — 수업에서 배운 세 가지 기준선(목표선·평소 범위선·고객 약속선)을 토대로, 다섯 팀이 각자의 방식으로 트리거 운영 체계를 설계했습니다.
+    </p>
+    <div class="header-meta">
+      <div class="meta-item">
+        <span class="meta-label">과제</span>
+        <span class="meta-value serif">KPI 이상 신호 기준 설계</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">참여 팀</span>
+        <span class="meta-value serif">5개 조</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">평가 방식</span>
+        <span class="meta-value serif">5축 루브릭 · 25점 만점</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">실습 대상</span>
+        <span class="meta-value serif">○○전자 커넥터 공장</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ━━━━━━━━━ LEADERBOARD ━━━━━━━━━ -->
+  <section>
+    <div class="section-head">
+      <span class="section-num serif">I.</span>
+      <h2 class="section-title">리더보드</h2>
+      <p class="section-desc">다섯 팀이 선택한 다섯 가지 관점. 같은 질문, 완전히 다른 답.</p>
+    </div>
+
+    <div class="leaderboard">
+
+      <div class="lb-card winner">
+        <div class="type-bar type-sys"></div>
+        <div class="lb-team">Team 4</div>
+        <div class="lb-rank serif">04</div>
+        <div class="lb-name serif">4조</div>
+        <div class="lb-type">관리 체계형 · System</div>
+        <div class="lb-score">
+          <span class="lb-score-big">22</span>
+          <span class="lb-score-total">/ 25</span>
+        </div>
+        <div class="lb-strength">
+          다단계 임계값(주의·경고·심각) + 복합 이상 신호 조합 + 운영 주기 차별화 — 오늘 유일하게 "시스템"을 설계한 팀.
+        </div>
+      </div>
+
+      <div class="lb-card" style="grid-row: 1;">
+        <div class="type-bar type-how"></div>
+        <div class="lb-team">Team 3 · 2nd</div>
+        <div class="lb-rank serif">03</div>
+        <div class="lb-name serif">3조</div>
+        <div class="lb-type">SOP 완성형 · How</div>
+        <div class="lb-score">
+          <span class="lb-score-big">19</span>
+          <span class="lb-score-total">/ 25</span>
+        </div>
+        <div class="lb-strength">
+          트리거→조치→보고→예시→판단 5단 구조. 현장에서 바로 쓸 수 있는 실행력.
+        </div>
+      </div>
+
+      <div class="lb-card" style="grid-row: 1;">
+        <div class="type-bar type-dim"></div>
+        <div class="lb-team">Team 2 · 3rd</div>
+        <div class="lb-rank serif">02</div>
+        <div class="lb-name serif">2조</div>
+        <div class="lb-type">차원 분할형 · Dimension</div>
+        <div class="lb-score">
+          <span class="lb-score-big">14</span>
+          <span class="lb-score-total">/ 25</span>
+        </div>
+        <div class="lb-strength">
+          심각도·지속성·내외부로 차원을 쪼갬. 압축된 통찰의 밀도.
+        </div>
+      </div>
+
+      <div class="lb-card" style="grid-row: 2;">
+        <div class="type-bar type-what"></div>
+        <div class="lb-team">Team 5 · 3rd</div>
+        <div class="lb-rank serif">05</div>
+        <div class="lb-name serif">5조</div>
+        <div class="lb-type">통계 지표형 · What</div>
+        <div class="lb-score">
+          <span class="lb-score-big">14</span>
+          <span class="lb-score-total">/ 25</span>
+        </div>
+        <div class="lb-strength">
+          Cpk(공정능력지수) 도입 — 통계 감각 최상위.
+        </div>
+      </div>
+
+      <div class="lb-card" style="grid-row: 2;">
+        <div class="type-bar type-why"></div>
+        <div class="lb-team">Team 1 · 5th</div>
+        <div class="lb-rank serif">01</div>
+        <div class="lb-name serif">1조</div>
+        <div class="lb-type">영향 분석형 · Why</div>
+        <div class="lb-score">
+          <span class="lb-score-big">11</span>
+          <span class="lb-score-total">/ 25</span>
+        </div>
+        <div class="lb-strength">
+          연쇄 효과와 현장 감각 — 문제의 본질을 읽어냄.
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ━━━━━━━━━ RUBRIC ━━━━━━━━━ -->
+  <section>
+    <div class="section-head">
+      <span class="section-num serif">II.</span>
+      <h2 class="section-title">평가 루브릭</h2>
+      <p class="section-desc">다섯 개의 축. 모든 팀을 동일 기준으로 채점.</p>
+    </div>
+
+    <div class="rubric-grid">
+      <div class="rubric-card">
+        <div class="rubric-num serif">Criterion 01</div>
+        <div class="rubric-title">트리거 근거의 명확성</div>
+        <div class="rubric-desc">수치가 목표선·평소선·약속선 중 어디서 왔는지 표기했는가</div>
+        <div class="rubric-points mono">5 POINTS</div>
+      </div>
+      <div class="rubric-card">
+        <div class="rubric-num serif">Criterion 02</div>
+        <div class="rubric-title">통계적 사고 반영</div>
+        <div class="rubric-desc">평균·흔들림(UCL/95%)·이상치 개념이 들어가는가</div>
+        <div class="rubric-points mono">5 POINTS</div>
+      </div>
+      <div class="rubric-card">
+        <div class="rubric-num serif">Criterion 03</div>
+        <div class="rubric-title">논리 구조 완결성</div>
+        <div class="rubric-desc">트리거 → 조치 → 보고 → 판단의 IF-THEN-WHO가 일관된가</div>
+        <div class="rubric-points mono">5 POINTS</div>
+      </div>
+      <div class="rubric-card">
+        <div class="rubric-num serif">Criterion 04</div>
+        <div class="rubric-title">비교 관점</div>
+        <div class="rubric-desc">절대값만이 아니라 전주·전월·범위 초과·추세를 함께 보는가</div>
+        <div class="rubric-points mono">5 POINTS</div>
+      </div>
+      <div class="rubric-card">
+        <div class="rubric-num serif">Criterion 05</div>
+        <div class="rubric-title">현장 실행 가능성</div>
+        <div class="rubric-desc">조치 주체·보고 예시까지 있어서 바로 쓸 수 있는가</div>
+        <div class="rubric-points mono">5 POINTS</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ━━━━━━━━━ TEAM DEEP DIVES ━━━━━━━━━ -->
+  <section>
+    <div class="section-head">
+      <span class="section-num serif">III.</span>
+      <h2 class="section-title">팀별 심화 피드백</h2>
+      <p class="section-desc">각 팀의 강점과 개선점. 탭을 눌러 이동하세요.</p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-team="4">
+        <span class="tab-dot" style="background: var(--c-sys)"></span>
+        4조 · System <span class="tab-score mono">22/25</span>
+      </button>
+      <button class="tab" data-team="3">
+        <span class="tab-dot" style="background: var(--c-how)"></span>
+        3조 · How <span class="tab-score mono">19/25</span>
+      </button>
+      <button class="tab" data-team="2">
+        <span class="tab-dot" style="background: var(--c-dim)"></span>
+        2조 · Dimension <span class="tab-score mono">14/25</span>
+      </button>
+      <button class="tab" data-team="5">
+        <span class="tab-dot" style="background: var(--c-what)"></span>
+        5조 · What <span class="tab-score mono">14/25</span>
+      </button>
+      <button class="tab" data-team="1">
+        <span class="tab-dot" style="background: var(--c-why)"></span>
+        1조 · Why <span class="tab-score mono">11/25</span>
+      </button>
+    </div>
+
+    <!-- 4조 -->
+    <div class="team-panel active" id="panel-4">
+      <div class="team-hero t-sys">
+        <div class="team-left">
+          <div>
+            <div class="team-badge">1위 · System</div>
+            <h3 class="team-name serif">4조</h3>
+            <p class="team-type">관리 체계형 — 시스템을 설계하다</p>
+          </div>
+          <div class="team-total">
+            <span class="team-total-num serif">22</span>
+            <span class="team-total-denom mono">/ 25</span>
+            <span class="team-total-label">Total</span>
+          </div>
+        </div>
+        <div class="scores">
+          <div class="score-row"><span class="score-name">트리거 근거의 명확성</span><div class="score-bar"><div class="score-fill" style="width: 80%"></div></div><span class="score-num mono">4 / 5</span></div>
+          <div class="score-row"><span class="score-name">통계적 사고 반영</span><div class="score-bar"><div class="score-fill" style="width: 60%"></div></div><span class="score-num mono">3 / 5</span></div>
+          <div class="score-row"><span class="score-name">논리 구조 완결성</span><div class="score-bar"><div class="score-fill" style="width: 100%"></div></div><span class="score-num mono">5 / 5</span></div>
+          <div class="score-row"><span class="score-name">비교 관점</span><div class="score-bar"><div class="score-fill" style="width: 100%"></div></div><span class="score-num mono">5 / 5</span></div>
+          <div class="score-row"><span class="score-name">현장 실행 가능성</span><div class="score-bar"><div class="score-fill" style="width: 100%"></div></div><span class="score-num mono">5 / 5</span></div>
+        </div>
+      </div>
+
+      <div class="feedback-grid">
+        <div class="feedback-block strengths">
+          <div class="feedback-head">
+            <div class="feedback-icon">+</div>
+            <h4 class="feedback-title">잘한 점</h4>
+          </div>
+          <div class="feedback-item">
+            <h4>트리거를 "이분법"이 아닌 "스펙트럼"으로</h4>
+            <p>다른 조는 <em>150분 이상이면 ON</em>이라는 On/Off 방식이었지만, 4조는 120분(주의) → 150분(경고) → 180분(심각)으로 <strong>3단계 계단</strong>을 만들었습니다. 이는 수업의 <em>목표선·평소선·약속선</em> 3단 구조를 다른 방식으로 구현한 것.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>복합 이상 신호 — 오늘 유일한 발상</h4>
+            <p>"Warning 2건 동시 발생 → Level 1"처럼 <strong>여러 KPI를 연결해 판단</strong>하는 체계. 현장의 시스템적 직관을 규칙으로 명문화했습니다.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>관리 주기를 KPI 특성에 맞춰 차별화</h4>
+            <p>정지시간=일, 납기율=주, 불량률=월 — 각 지표의 <em>변동 속도</em>를 이해한 설계. 왜 이렇게 나눴는가를 암묵적으로 알고 쓴 답안.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>"지속적 보정" — 기준선도 살아 움직인다</h4>
+            <p>"향후 운영 데이터를 기반으로 기준값을 지속적으로 보정" — 관리도의 재산출, 능력치 업데이트 관점까지 포함. <strong>어느 조도 이 지점까지 가지 않았습니다.</strong></p>
+          </div>
+        </div>
+
+        <div class="feedback-block improvements">
+          <div class="feedback-head">
+            <div class="feedback-icon">△</div>
+            <h4 class="feedback-title">개선점</h4>
+          </div>
+          <div class="feedback-item">
+            <h4>통계 용어로 한 번 더 봉인하면 완벽</h4>
+            <p>관리도 사고를 이미 하고 있음에도 <em>평균·UCL·3σ</em> 같은 용어를 쓰지 않았습니다. "150분이 UCL이다" 한 줄만 더해지면 5조의 Cpk 레벨까지 흡수합니다.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>임계값의 근거 — 왜 120/150/180분인가?</h4>
+            <p>이 수치들이 실측 데이터에서 왔는지 경험적으로 정했는지 문서에 없습니다. "B라인 지난 6개월 평균 85분, UCL 142분" 같은 <strong>뿌리 한 줄</strong>이 있으면 만점.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>Level 2 대응의 구체성</h4>
+            <p>"공정 점검 및 개선 조치 실행" — 추상적입니다. <em>누가 소집하고 몇 시간 내 결과를 내는지</em> 명시되면 3조 수준의 실행 디테일까지 확보.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="team-summary">
+        <div class="team-summary-label">총평</div>
+        <p>오늘 조 중 유일하게 <strong>'시스템'</strong>을 설계했습니다. 1조가 Why, 3조가 How, 5조가 What에 답했다면 4조는 이 셋을 묶어 관리 체계(System)를 만들었습니다. 다단계 임계값과 복합 신호 조합은 이 과정 전체에서 기대했던 기준선 사고의 최고 수준 구현입니다.</p>
+      </div>
+    </div>
+
+    <!-- 3조 -->
+    <div class="team-panel" id="panel-3">
+      <div class="team-hero t-how">
+        <div class="team-left">
+          <div>
+            <div class="team-badge">2위 · How</div>
+            <h3 class="team-name serif">3조</h3>
+            <p class="team-type">SOP 완성형 — 움직임을 만든다</p>
+          </div>
+          <div class="team-total">
+            <span class="team-total-num serif">19</span>
+            <span class="team-total-denom mono">/ 25</span>
+            <span class="team-total-label">Total</span>
+          </div>
+        </div>
+        <div class="scores">
+          <div class="score-row"><span class="score-name">트리거 근거의 명확성</span><div class="score-bar"><div class="score-fill" style="width: 60%"></div></div><span class="score-num mono">3 / 5</span></div>
+          <div class="score-row"><span class="score-name">통계적 사고 반영</span><div class="score-bar"><div class="score-fill" style="width: 40%"></div></div><span class="score-num mono">2 / 5</span></div>
+          <div class="score-row"><span class="score-name">논리 구조 완결성</span><div class="score-bar"><div class="score-fill" style="width: 100%"></div></div><span class="score-num mono">5 / 5</span></div>
+          <div class="score-row"><span class="score-name">비교 관점</span><div class="score-bar"><div class="score-fill" style="width: 80%"></div></div><span class="score-num mono">4 / 5</span></div>
+          <div class="score-row"><span class="score-name">현장 실행 가능성</span><div class="score-bar"><div class="score-fill" style="width: 100%"></div></div><span class="score-num mono">5 / 5</span></div>
+        </div>
+      </div>
+
+      <div class="feedback-grid">
+        <div class="feedback-block strengths">
+          <div class="feedback-head">
+            <div class="feedback-icon">+</div>
+            <h4 class="feedback-title">잘한 점</h4>
+          </div>
+          <div class="feedback-item">
+            <h4>프레임의 일관성이 탁월</h4>
+            <p>3개 트리거 모두 <strong>트리거 → 조치 → 보고내용 → 예시 → 판단</strong>의 동일한 5단 구조. SOP 문서로 바로 올릴 수 있는 수준입니다.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>"보고 예시" 문장까지 완성</h4>
+            <p>"B라인 정지시간 320분 (전주 대비 2배 증가)" — <em>숫자 + 비교 + 변화 폭</em>이 한 문장에. "숫자만 보고하지 않는다" 원칙을 정확히 실행.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>이상치를 반복성/추세로 재해석</h4>
+            <p>"단발성❌ 반복성✔️", "일시적❌ 추세하락✔️" — 통계 용어를 쓰지 않았을 뿐, <strong>이상치 판단의 핵심(랜덤 vs 구조적)</strong>을 현장 언어로 표현.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>조치 주체가 명확</h4>
+            <p>설비팀 / 생산관리팀 / 품질팀장 — 트리거가 울렸을 때 <em>누가 움직이는가</em>가 명시. 보고가 공중에 뜨지 않습니다.</p>
+          </div>
+        </div>
+
+        <div class="feedback-block improvements">
+          <div class="feedback-head">
+            <div class="feedback-icon">△</div>
+            <h4 class="feedback-title">개선점</h4>
+          </div>
+          <div class="feedback-item">
+            <h4>기준선 소속을 한 줄씩</h4>
+            <p>"이 수치는 ③ 고객 약속선"처럼 근거 표기가 있으면, 왜 150분이고 왜 93%인지 질문이 들어와도 즉답 가능.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>불량률 "+1%p"의 근거가 약함</h4>
+            <p>B라인 평소 평균 3.98%, UCL 4.46% → 평소 흔들림이 이미 ±0.5%p 수준. "+1%p 상승"이 정상인지 이상인지 애매합니다. <strong>"UCL 초과 또는 +1%p 이상"</strong>처럼 범위 기반 조건이 추가되면 근거가 튼튼.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>통계적 사고를 "말"로 옮기기</h4>
+            <p>"평소 흔들림의 2배를 넘으면" 같은 표현을 넣으면 — 수업에서 배운 <em>흔들림(UCL)</em> 개념을 체화했다는 신호.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="team-summary">
+        <div class="team-summary-label">총평</div>
+        <p><strong>SOP로서는 A급, 통계적 근거 제시에서 B급.</strong> 현장에서 바로 쓸 수 있는 완성도는 최상위권. 수치의 출처(기준선)와 흔들림 기반 판단을 한 줄씩만 보강하면 24~25점 구간으로 갑니다.</p>
+      </div>
+    </div>
+
+    <!-- 2조 -->
+    <div class="team-panel" id="panel-2">
+      <div class="team-hero t-dim">
+        <div class="team-left">
+          <div>
+            <div class="team-badge">3위 · Dimension</div>
+            <h3 class="team-name serif">2조</h3>
+            <p class="team-type">차원 분할형 — 하나로 보지 않는다</p>
+          </div>
+          <div class="team-total">
+            <span class="team-total-num serif">14</span>
+            <span class="team-total-denom mono">/ 25</span>
+            <span class="team-total-label">Total</span>
+          </div>
+        </div>
+        <div class="scores">
+          <div class="score-row"><span class="score-name">트리거 근거의 명확성</span><div class="score-bar"><div class="score-fill" style="width: 80%"></div></div><span class="score-num mono">4 / 5</span></div>
+          <div class="score-row"><span class="score-name">통계적 사고 반영</span><div class="score-bar"><div class="score-fill" style="width: 60%"></div></div><span class="score-num mono">3 / 5</span></div>
+          <div class="score-row"><span class="score-name">논리 구조 완결성</span><div class="score-bar"><div class="score-fill" style="width: 40%"></div></div><span class="score-num mono">2 / 5</span></div>
+          <div class="score-row"><span class="score-name">비교 관점</span><div class="score-bar"><div class="score-fill" style="width: 80%"></div></div><span class="score-num mono">4 / 5</span></div>
+          <div class="score-row"><span class="score-name">현장 실행 가능성</span><div class="score-bar"><div class="score-fill" style="width: 20%"></div></div><span class="score-num mono">1 / 5</span></div>
+        </div>
+      </div>
+
+      <div class="feedback-grid">
+        <div class="feedback-block strengths">
+          <div class="feedback-head">
+            <div class="feedback-icon">+</div>
+            <h4 class="feedback-title">잘한 점</h4>
+          </div>
+          <div class="feedback-item">
+            <h4>세 KPI를 모두 "차원 분할"로</h4>
+            <p>불량은 <em>심각도</em>, 정지는 <em>지속성</em>, 납기는 <em>내외부</em>. 일관된 관점은 오늘 조 중 유일. "하나의 숫자로 판단하지 말고 <strong>차원을 쪼개자</strong>"는 메시지가 관통합니다.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>불량률 — FMEA 심각도 관점</h4>
+            <p>치명 0% / 중결함 0.1~0.5% / 경결함 1~2%. 5조의 "유형 분류"와 달리, <strong>결과의 치명성</strong>으로 나눔. 평균 수치 하나로는 놓치는 "한 건의 치명 불량"을 잡아냅니다.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>정지시간 — 순간 vs 지속</h4>
+            <p>3조가 "반복성"이라는 <em>말</em>로 표현한 걸, 2조는 <strong>"150분(지속) / 30분(순간)"</strong>이라는 두 개의 트리거로 수치화. MTBF 감각이 있어야 나오는 발상.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>납기 — 수업 기준선의 가장 정확한 구현</h4>
+            <p>내부 100% ≈ <em>우리 목표선</em>, 외부 95% ≈ <em>고객 약속선</em>. "내부는 타이트하게, 약속은 느슨하게" 원칙을 <strong>가장 짧은 한 줄</strong>로 구현했습니다.</p>
+          </div>
+        </div>
+
+        <div class="feedback-block improvements">
+          <div class="feedback-head">
+            <div class="feedback-icon">△</div>
+            <h4 class="feedback-title">개선점</h4>
+          </div>
+          <div class="feedback-item">
+            <h4>분류만 있고 움직임이 없음</h4>
+            <p><strong>진단 체계는 있는데 처방 체계가 없습니다.</strong> 치명 0%가 넘으면 누가, 몇 분 안에, 어디로 보고하는가? 3조의 5단 구조를 얹기만 하면 20점대 후반으로.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>수치의 근거 부재</h4>
+            <p>"중결함 0.1~0.5%" — 왜 이 구간인가? B라인 과거 데이터에서 평균 얼마였길래? <em>지난 6개월 데이터 기반</em> 한 줄이 있었으면 만점.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>분할 기준의 명문화</h4>
+            <p>"치명/중/경"의 정의가 없습니다. 무엇이 치명? 고객 리콜? 안전 사고? 분할 체계는 정교한데 <em>분할의 기준 자체</em>가 모호해서 실무 논쟁 가능성.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>답안의 형식이 너무 압축적</h4>
+            <p>머릿속에는 명확한 체계가 있어 보이는데, <strong>쓰여진 문장이 너무 압축</strong>되어 채점자가 의도를 재구성해야 했습니다. 말한 것을 글로 복원하는 훈련 필요.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="team-summary">
+        <div class="team-summary-label">총평</div>
+        <p><strong>압축된 통찰 — 읽는 이가 풀어내야 하는 답안.</strong> FMEA·MTBF·기준선 이론이 한 줄씩 압축된 — 개념의 밀도로는 상위권. 다만 "분류만 있고 운영이 없다"는 결정적 약점. 이 분류 체계 위에 4조의 Level 대응과 3조의 5단 SOP를 얹었다면 오늘의 종합 우승이었을 구조.</p>
+      </div>
+    </div>
+
+    <!-- 5조 -->
+    <div class="team-panel" id="panel-5">
+      <div class="team-hero t-what">
+        <div class="team-left">
+          <div>
+            <div class="team-badge">3위 · What</div>
+            <h3 class="team-name serif">5조</h3>
+            <p class="team-type">통계 지표형 — 도구로 판단한다</p>
+          </div>
+          <div class="team-total">
+            <span class="team-total-num serif">14</span>
+            <span class="team-total-denom mono">/ 25</span>
+            <span class="team-total-label">Total</span>
+          </div>
+        </div>
+        <div class="scores">
+          <div class="score-row"><span class="score-name">트리거 근거의 명확성</span><div class="score-bar"><div class="score-fill" style="width: 60%"></div></div><span class="score-num mono">3 / 5</span></div>
+          <div class="score-row"><span class="score-name">통계적 사고 반영</span><div class="score-bar"><div class="score-fill" style="width: 80%"></div></div><span class="score-num mono">4 / 5</span></div>
+          <div class="score-row"><span class="score-name">논리 구조 완결성</span><div class="score-bar"><div class="score-fill" style="width: 40%"></div></div><span class="score-num mono">2 / 5</span></div>
+          <div class="score-row"><span class="score-name">비교 관점</span><div class="score-bar"><div class="score-fill" style="width: 60%"></div></div><span class="score-num mono">3 / 5</span></div>
+          <div class="score-row"><span class="score-name">현장 실행 가능성</span><div class="score-bar"><div class="score-fill" style="width: 40%"></div></div><span class="score-num mono">2 / 5</span></div>
+        </div>
+      </div>
+
+      <div class="feedback-grid">
+        <div class="feedback-block strengths">
+          <div class="feedback-head">
+            <div class="feedback-icon">+</div>
+            <h4 class="feedback-title">잘한 점</h4>
+          </div>
+          <div class="feedback-item">
+            <h4>Cpk 도입 — 오늘 조 중 통계 감각이 가장 높음</h4>
+            <p>Cpk(공정능력지수)는 <em>공정이 규격 안에서 얼마나 안정적으로 돌아가는가</em>를 보여주는 지표. 보통 <strong>1.33 이상</strong>이면 양호, 1.0 미만이면 공정 재검토. 3조가 "반복성"이라는 말로 이상치를 표현했다면, 5조는 <strong>Cpk라는 수치</strong>로 공정 안정성을 직접 들여다봄 — 수준이 다릅니다.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>불량 유형을 먼저 나누는 접근</h4>
+            <p>전체 불량률이 아니라 유형별로 쪼개서 보겠다 = <strong>파레토 관점</strong>의 시작. "불량률 4.2%" 하나보다 "도금불량 2.1% + 치수불량 1.3%"로 나뉘는 순간 공략점이 보입니다.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>개선 목표를 구체 수치로</h4>
+            <p>"줄이자"가 아니라 <em>"5~10% 줄이자", "2~3% 줄이자"</em> — 측정 가능한 목표. 방향만 제시한 다른 조보다 앞선 부분.</p>
+          </div>
+        </div>
+
+        <div class="feedback-block improvements">
+          <div class="feedback-head">
+            <div class="feedback-icon">△</div>
+            <h4 class="feedback-title">개선점</h4>
+          </div>
+          <div class="feedback-item">
+            <h4>"트리거" vs "개선 목표" 혼재</h4>
+            <p>"전년도 대비 5~10% 줄이자"는 <em>개선 KPI</em>, "150분 이상"은 <em>이상 감지 트리거</em>. 두 개는 역할이 다릅니다. <strong>트리거: 지금 비정상인가 → 움직임 시작 / 개선 목표: 연간 어디까지 갈 것인가 → 성과 측정</strong></p>
+          </div>
+          <div class="feedback-item">
+            <h4>Cpk를 도입했으면 목표 Cpk값까지</h4>
+            <p>"Cpk로 개선 시도"에서 멈추지 말고 → <strong>"도금불량 Cpk 1.0 미만 시 트리거, 목표 Cpk 1.33 이상"</strong>처럼 수치 기준까지. 지금은 도구는 꺼냈는데 날을 세우지 않은 느낌.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>SOP 골격이 비어 있음</h4>
+            <p>3조의 강점이 5조의 약점. 진단·목표 숫자는 좋은데 <em>트리거가 울린 다음의 흐름(누가 → 무엇을 → 언제까지 → 어떻게 보고)</em>이 없어요.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>"5~10%, 2~3%"의 근거</h4>
+            <p>왜 하필 이 범위인가? 전년도 편차가 어떠했길래? 비어 있으면 <em>감으로 정한 목표</em>로 보입니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="team-summary">
+        <div class="team-summary-label">총평</div>
+        <p><strong>통계 감각은 최상, SOP 완성도는 아쉬움.</strong> 3조의 반대 포지션입니다. 3조가 "SOP A급, 통계 B급"이었다면 5조는 "통계 A급, SOP D급". Cpk·파레토 관점을 가져온 건 오늘 조 중 가장 앞선 접근이지만, 이 도구를 <em>"언제·누가·어떻게 움직이는가"</em>라는 실행 프레임에 얹지 못한 게 결정적 감점.</p>
+      </div>
+    </div>
+
+    <!-- 1조 -->
+    <div class="team-panel" id="panel-1">
+      <div class="team-hero t-why">
+        <div class="team-left">
+          <div>
+            <div class="team-badge">5위 · Why</div>
+            <h3 class="team-name serif">1조</h3>
+            <p class="team-type">영향 분석형 — 문제를 이해한다</p>
+          </div>
+          <div class="team-total">
+            <span class="team-total-num serif">11</span>
+            <span class="team-total-denom mono">/ 25</span>
+            <span class="team-total-label">Total</span>
+          </div>
+        </div>
+        <div class="scores">
+          <div class="score-row"><span class="score-name">트리거 근거의 명확성</span><div class="score-bar"><div class="score-fill" style="width: 40%"></div></div><span class="score-num mono">2 / 5</span></div>
+          <div class="score-row"><span class="score-name">통계적 사고 반영</span><div class="score-bar"><div class="score-fill" style="width: 20%"></div></div><span class="score-num mono">1 / 5</span></div>
+          <div class="score-row"><span class="score-name">논리 구조 완결성</span><div class="score-bar"><div class="score-fill" style="width: 40%"></div></div><span class="score-num mono">2 / 5</span></div>
+          <div class="score-row"><span class="score-name">비교 관점</span><div class="score-bar"><div class="score-fill" style="width: 40%"></div></div><span class="score-num mono">2 / 5</span></div>
+          <div class="score-row"><span class="score-name">현장 실행 가능성</span><div class="score-bar"><div class="score-fill" style="width: 80%"></div></div><span class="score-num mono">4 / 5</span></div>
+        </div>
+      </div>
+
+      <div class="feedback-grid">
+        <div class="feedback-block strengths">
+          <div class="feedback-head">
+            <div class="feedback-icon">+</div>
+            <h4 class="feedback-title">잘한 점</h4>
+          </div>
+          <div class="feedback-item">
+            <h4>"왜 이게 문제인가"를 현장 언어로</h4>
+            <p>"병목 공정 정지 → 전·후공정 동시 비효율", "재가동 시 초기 불량 및 셋업 시간 증가" — <strong>현장 감각이 없으면 못 쓰는 문장</strong>들입니다.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>연쇄 효과(Chain Effect)를 포착</h4>
+            <p>정지시간 → 재가동 불량 → 실질 손실 시간 확대. 하나의 이상이 <em>다음 문제를 낳는 구조</em>를 봅니다. "숫자 하나만 보지 마라"는 수업 메시지와 결이 맞아요.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>생산/품질/납기를 서로 연결</h4>
+            <p>3개 트리거를 독립 항목이 아닌 <strong>서로 엮인 시스템</strong>으로 본 관점. 이건 1조만의 것.</p>
+          </div>
+        </div>
+
+        <div class="feedback-block improvements">
+          <div class="feedback-head">
+            <div class="feedback-icon">△</div>
+            <h4 class="feedback-title">개선점</h4>
+          </div>
+          <div class="feedback-item">
+            <h4>결정적 문제: 질문의 방향이 어긋남</h4>
+            <p>수업 질문은 <em>"수치가 넘으면 어떻게 움직일 것인가"</em> = IF-THEN-WHO. 1조 답안은 <em>"수치가 넘으면 무슨 일이 벌어지는가"</em>에 답했습니다. <strong>답안 자체는 잘 썼지만, 질문에 대한 답이 아닙니다.</strong></p>
+          </div>
+          <div class="feedback-item">
+            <h4>통계·기준선 관점 부재</h4>
+            <p>"150분 이상"이 왜 150분인지, 평소가 얼마인지, UCL을 넘는지 — 수치의 뿌리가 전혀 다뤄지지 않음. 3조는 <em>소속 누락</em>이었다면, 1조는 <strong>기준선 개념 자체</strong>가 답안에 없습니다.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>조치·주체·보고 양식 전면 누락</h4>
+            <p>"긴급 생산 발생" — <em>자동으로 벌어지는 현상</em>처럼 기술됐지만, 실제로는 누군가 결정하고 누군가 보고받고 누군가 움직입니다. 주어가 빠지면 SOP가 되지 않습니다.</p>
+          </div>
+          <div class="feedback-item">
+            <h4>"👉 결과" 문장이 결론이 아님</h4>
+            <p>"생산 계획 붕괴", "운영 혼선" — 이건 이상의 <em>부정적 결과</em>이지, 트리거 이후의 <em>다음 행동</em>이 아닙니다. 결론 자리에 <strong>"→ 설비팀장에게 30분 내 보고"</strong> 같은 행동이 들어갔어야 합니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="team-summary">
+        <div class="team-summary-label">총평</div>
+        <p><strong>문제 이해도는 높지만, 답안의 장르가 다릅니다.</strong> 1조 답안은 "경영진 보고용 영향 분석 리포트"로는 훌륭한 초안. 하지만 과제는 "현장 SOP"였습니다. 기존 문장을 살리되 각 항목 끝에 <em>"→ 담당자 / 보고 양식 / 조치"</em> 3줄만 추가하면 18~20점 구간으로 올라갑니다.</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ━━━━━━━━━ SYNTHESIS ━━━━━━━━━ -->
+  <section>
+    <div class="section-head">
+      <span class="section-num serif">IV.</span>
+      <h2 class="section-title">오늘의 다섯 관점</h2>
+      <p class="section-desc">같은 질문, 완전히 다른 답. 이 다섯을 합치면 완벽한 체계가 됩니다.</p>
+    </div>
+
+    <div class="synthesis">
+      <p class="synth-intro serif">
+        "다섯 팀이 같은 질문에 다섯 가지 다른 장르로 답했습니다.<br>
+        이건 약점이 아니라 — KPI 관리 체계의 다섯 얼굴입니다."
+      </p>
+
+      <div class="synth-grid">
+        <div class="synth-card s-why">
+          <div class="synth-team-label">1조</div>
+          <div class="synth-perspective serif">Why</div>
+          <div class="synth-perspective-kr">영향 분석</div>
+          <p class="synth-question">왜 이게 중요한가?<br>무엇이 무너지는가?</p>
+        </div>
+        <div class="synth-card s-dim">
+          <div class="synth-team-label">2조</div>
+          <div class="synth-perspective serif">Dimension</div>
+          <div class="synth-perspective-kr">차원 분할</div>
+          <p class="synth-question">어떻게 쪼개서 볼 것인가?<br>심각도·지속성·내외부</p>
+        </div>
+        <div class="synth-card s-how">
+          <div class="synth-team-label">3조</div>
+          <div class="synth-perspective serif">How</div>
+          <div class="synth-perspective-kr">실행 프로세스</div>
+          <p class="synth-question">어떻게 움직이나?<br>누가·무엇을·언제</p>
+        </div>
+        <div class="synth-card s-sys">
+          <div class="synth-team-label">4조</div>
+          <div class="synth-perspective serif">System</div>
+          <div class="synth-perspective-kr">관리 체계</div>
+          <p class="synth-question">어떻게 시스템화하나?<br>레벨·조합·주기</p>
+        </div>
+        <div class="synth-card s-what">
+          <div class="synth-team-label">5조</div>
+          <div class="synth-perspective serif">What</div>
+          <div class="synth-perspective-kr">통계 지표</div>
+          <p class="synth-question">무엇으로 판단하나?<br>Cpk·파레토</p>
+        </div>
+      </div>
+
+      <div class="synth-conclusion">
+        <div class="synth-conclusion-label">Today's Takeaway</div>
+        <p class="synth-conclusion-text serif">
+          좋은 트리거란 단일 임계값이 아니라<br>
+          <strong>등급화된 스펙트럼 + 조합 규칙 + 운영 주기 + 대응 레벨</strong>의 묶음입니다.
+        </p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>생산·품질 데이터, GPT로 보고서가 되다 · 풍산 과정 · 2026년 4월 23일</p>
+  <p>경주 더케이호텔 · 팀 프로젝트 실시간 평가 결과</p>
+</footer>
+
+<script>
+  // Tab switching
+  const tabs = document.querySelectorAll('.tab');
+  const panels = document.querySelectorAll('.team-panel');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const teamId = tab.dataset.team;
+
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+
+      tab.classList.add('active');
+      const targetPanel = document.getElementById(`panel-${teamId}`);
+      targetPanel.classList.add('active');
+
+      // Re-trigger score bar animations
+      const fills = targetPanel.querySelectorAll('.score-fill');
+      fills.forEach(fill => {
+        const width = fill.style.width;
+        fill.style.width = '0%';
+        requestAnimationFrame(() => {
+          setTimeout(() => { fill.style.width = width; }, 50);
+        });
+      });
+
+      // Scroll tabs into view smoothly on mobile
+      tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    });
+  });
+
+  // Leaderboard card clicks → jump to team tab
+  document.querySelectorAll('.lb-card').forEach(card => {
+    const teamLabel = card.querySelector('.lb-team').textContent;
+    const teamMatch = teamLabel.match(/Team (\d)/);
+    if (!teamMatch) return;
+    const teamNum = teamMatch[1];
+    card.addEventListener('click', () => {
+      const targetTab = document.querySelector(`.tab[data-team="${teamNum}"]`);
+      if (targetTab) {
+        targetTab.click();
+        document.querySelector('.tabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // Initial animation for default active panel
+  window.addEventListener('load', () => {
+    const activePanel = document.querySelector('.team-panel.active');
+    const fills = activePanel.querySelectorAll('.score-fill');
+    fills.forEach(fill => {
+      const width = fill.style.width;
+      fill.style.width = '0%';
+      setTimeout(() => { fill.style.width = width; }, 200);
+    });
+  });
+</script>
+
+</body>
+</html>
